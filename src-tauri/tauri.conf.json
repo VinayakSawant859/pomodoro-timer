@@ -1,0 +1,73 @@
+{
+    "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+    "build": {
+        "beforeBuildCommand": "npm run build",
+        "beforeDevCommand": "npm run dev",
+        "frontendDist": "../dist",
+        "devUrl": "http://localhost:1420"
+    },
+    "bundle": {
+        "active": true,
+        "targets": "all",
+        "category": "Productivity",
+        "copyright": "",
+        "externalBin": [],
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ],
+        "longDescription": "",
+        "macOS": {
+            "entitlements": null,
+            "exceptionDomain": "",
+            "frameworks": [],
+            "providerShortName": null,
+            "signingIdentity": null
+        },
+        "resources": [],
+        "shortDescription": "",
+        "windows": {
+            "certificateThumbprint": null,
+            "digestAlgorithm": "sha256",
+            "timestampUrl": ""
+        },
+        "linux": {
+            "deb": {
+                "depends": []
+            }
+        }
+    },
+    "productName": "Pomodoro Timer",
+    "version": "1.0.0",
+    "identifier": "com.vinayak.pomodoro-timer",
+    "plugins": {
+        "shell": {
+            "open": true
+        },
+        "fs": {
+            "requireLiteralLeadingDot": false
+        },
+        "updater": {
+            "active": true
+        }
+    },
+    "app": {
+        "windows": [
+            {
+                "fullscreen": false,
+                "resizable": true,
+                "title": "Pomodoro Timer",
+                "width": 1200,
+                "height": 800,
+                "minWidth": 800,
+                "minHeight": 600
+            }
+        ],
+        "security": {
+            "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'"
+        }
+    }
+}
