@@ -74,7 +74,7 @@ const createTimerStore = () => {
                     sessionType: 'work',
                     durationMinutes: 25
                 });
-                
+
                 update(state => ({
                     ...state,
                     isRunning: true,
@@ -111,7 +111,7 @@ const createTimerStore = () => {
                             interrupted: true
                         }).catch(console.error);
                     }
-                    
+
                     const newState = {
                         ...state,
                         isRunning: false,
@@ -119,7 +119,7 @@ const createTimerStore = () => {
                         currentTaskId: undefined,
                         currentSessionId: undefined
                     };
-                    
+
                     resolve();
                     return newState;
                 });
@@ -139,7 +139,7 @@ const createTimerStore = () => {
                             interrupted
                         }).catch(console.error);
                     }
-                    
+
                     const newSessionType: 'work' | 'break' = state.currentSession.type === 'work' ? 'break' : 'work';
                     const newDuration = newSessionType === 'work' ? 25 : 5; // Default durations
 
@@ -152,10 +152,15 @@ const createTimerStore = () => {
                         isPaused: false,
                         currentSessionId: undefined
                     };
-                    
+
                     resolve();
                     return newState;
                 });
+                
+                // Refresh stats after completing a session
+                if (!interrupted) {
+                    statsStore.loadToday();
+                }
             });
         },
         setSession: (type: 'work' | 'break', duration: number) => update(state => ({
@@ -202,14 +207,18 @@ const createTaskStore = () => {
         subscribe,
         load: async () => {
             try {
+                console.log('Loading tasks from database...');
                 const tasks = await invoke<Task[]>('get_tasks');
+                console.log('Tasks loaded:', tasks.length, 'tasks');
                 set(tasks);
             } catch (error) {
                 console.warn('Tauri not available, using local storage');
                 // Fallback to localStorage
                 const stored = localStorage.getItem('pomodoro-tasks');
                 if (stored) {
-                    set(JSON.parse(stored));
+                    const tasks = JSON.parse(stored);
+                    console.log('Fallback tasks loaded:', tasks.length, 'tasks');
+                    set(tasks);
                 }
             }
         },
@@ -223,7 +232,7 @@ const createTaskStore = () => {
                 estimated_pomodoros: 1,
                 actual_pomodoros: 0
             };
-            
+
             try {
                 const tauriTask = await invoke<Task>('add_task', { text });
                 update(tasks => {
@@ -250,6 +259,8 @@ const createTaskStore = () => {
                     );
                     return newTasks;
                 });
+                // Refresh stats after completing a task
+                statsStore.loadToday();
             } catch (error) {
                 // Fallback to localStorage
                 update(tasks => {
@@ -265,7 +276,7 @@ const createTaskStore = () => {
             try {
                 await invoke('complete_task', { taskId: id, completed: false });
                 update(tasks => {
-                    const newTasks = tasks.map(t => 
+                    const newTasks = tasks.map(t =>
                         t.id === id ? { ...t, completed: false, completed_at: undefined } : t
                     );
                     return newTasks;
@@ -273,7 +284,7 @@ const createTaskStore = () => {
             } catch (error) {
                 // Fallback to localStorage
                 update(tasks => {
-                    const newTasks = tasks.map(t => 
+                    const newTasks = tasks.map(t =>
                         t.id === id ? { ...t, completed: false, completed_at: undefined } : t
                     );
                     localStorage.setItem('pomodoro-tasks', JSON.stringify(newTasks));
@@ -285,7 +296,7 @@ const createTaskStore = () => {
             try {
                 await invoke('update_task', { taskId: id, text });
                 update(tasks => {
-                    const newTasks = tasks.map(t => 
+                    const newTasks = tasks.map(t =>
                         t.id === id ? { ...t, text } : t
                     );
                     return newTasks;
@@ -293,7 +304,7 @@ const createTaskStore = () => {
             } catch (error) {
                 // Fallback to localStorage
                 update(tasks => {
-                    const newTasks = tasks.map(t => 
+                    const newTasks = tasks.map(t =>
                         t.id === id ? { ...t, text } : t
                     );
                     localStorage.setItem('pomodoro-tasks', JSON.stringify(newTasks));
@@ -361,7 +372,9 @@ const createStatsStore = () => {
         subscribe,
         loadDaily: async (date: string) => {
             try {
+                console.log('Loading daily stats for:', date);
                 const stats = await invoke<DailyStats>('get_daily_stats', { date });
+                console.log('Daily stats loaded:', stats);
                 set(stats);
                 return stats;
             } catch (error) {
@@ -373,13 +386,14 @@ const createStatsStore = () => {
                     total_work_time: 0,
                     tasks_completed: 0
                 };
+                console.log('Using fallback stats:', emptyStats);
                 set(emptyStats);
                 return emptyStats;
             }
         },
-        loadToday: async () => {
+        loadToday: async function() {
             const today = new Date().toISOString().split('T')[0];
-            return await createStatsStore().loadDaily(today);
+            return await this.loadDaily(today);
         }
     };
 };

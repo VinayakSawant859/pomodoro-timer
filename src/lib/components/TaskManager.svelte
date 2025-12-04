@@ -1,7 +1,7 @@
 <script lang="ts">
     import { taskStore, timerStore, statsStore } from "$lib/stores";
     import type { Task, DailyStats } from "$lib/stores";
-    import { onMount } from 'svelte';
+    import { onMount } from "svelte";
 
     let newTaskText = "";
     let editingTask: Task | null = null;
@@ -12,7 +12,8 @@
     $: completedTasks = $taskStore.filter((task) => task.completed);
 
     onMount(async () => {
-        // Load daily stats for today
+        // Load tasks and daily stats for today
+        await taskStore.load();
         await statsStore.loadToday();
     });
 
@@ -121,26 +122,29 @@
 
     <!-- Stats Section -->
     <div class="stats-section">
-        <button 
-            class="stats-toggle" 
-            on:click={() => showStats = !showStats}
-        >
-            📊 Today's Stats {showStats ? '▼' : '▶'}
+        <button class="stats-toggle" on:click={() => (showStats = !showStats)}>
+            📊 Today's Stats {showStats ? "▼" : "▶"}
         </button>
-        
+
         {#if showStats && $statsStore}
             <div class="stats-content">
                 <div class="stat-item">
                     <span class="stat-label">🍅 Pomodoros:</span>
-                    <span class="stat-value">{$statsStore.pomodoros_completed}</span>
+                    <span class="stat-value"
+                        >{$statsStore.pomodoros_completed}</span
+                    >
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">⏱️ Work Time:</span>
-                    <span class="stat-value">{Math.floor($statsStore.total_work_time / 60)}h {$statsStore.total_work_time % 60}m</span>
+                    <span class="stat-value"
+                        >{Math.floor($statsStore.total_work_time / 60)}h {$statsStore.total_work_time %
+                            60}m</span
+                    >
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">✅ Tasks Done:</span>
-                    <span class="stat-value">{$statsStore.tasks_completed}</span>
+                    <span class="stat-value">{$statsStore.tasks_completed}</span
+                    >
                 </div>
             </div>
         {/if}

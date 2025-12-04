@@ -284,6 +284,16 @@ async fn complete_task(
         ],
     ).map_err(|e| format!("Database error: {}", e))?;
     
+    // Update daily stats when task is completed
+    if completed {
+        let today = chrono::Utc::now().format("%Y-%m-%d").to_string();
+        conn.execute(
+            "INSERT OR REPLACE INTO daily_stats (date, tasks_completed, created_at) 
+             VALUES (?1, COALESCE((SELECT tasks_completed FROM daily_stats WHERE date = ?1), 0) + 1, ?2)",
+            [&today, &chrono::Utc::now().to_rfc3339()],
+        ).map_err(|e| format!("Database error: {}", e))?;
+    }
+    
     Ok(())
 }
 
