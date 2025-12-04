@@ -2,7 +2,7 @@
 
 A modern, cross-platform Pomodoro Timer built with Svelte and Tauri. Features a sleek UI with task management, customizable sessions, audio notifications, and dynamic theming with a custom icon design.
 
-![Pomodoro Timer](src-tauri/icons/icon.png)
+![Pomodoro Timer](src-tauri/icons/icon.ico)
 
 > **Built for productivity enthusiasts** - A beautiful, feature-rich Pomodoro Timer that helps you stay focused and organized.
 
