@@ -29,7 +29,7 @@
         <div class="header-left">
             <h1>Pomodoro Timer <span class="author">by vinayak</span></h1>
             <a
-                href="https://github.com/VinayakSawannt859"
+                href="https://github.com/VinayakSawant859"
                 target="_blank"
                 rel="noopener"
                 class="github-link"

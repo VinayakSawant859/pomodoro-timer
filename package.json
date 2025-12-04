@@ -6,9 +6,16 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/your-username/pomodoro-timer.git"
+        "url": "https://github.com/VinayakSawant859/pomodoro-timer.git"
     },
-    "keywords": ["pomodoro", "timer", "productivity", "tauri", "svelte", "desktop"],
+    "keywords": [
+        "pomodoro",
+        "timer",
+        "productivity",
+        "tauri",
+        "svelte",
+        "desktop"
+    ],
     "private": true,
     "scripts": {
         "build": "vite build",
