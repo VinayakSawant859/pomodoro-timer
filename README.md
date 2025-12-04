@@ -1,15 +1,34 @@
-# Pomodoro Timer
+# 🍅 Pomodoro Timer
 
-A modern, cross-platform Pomodoro Timer built with Svelte and Tauri. Features a clean UI with task management, customizable sessions, and audio notifications.
+A modern, cross-platform Pomodoro Timer built with Svelte and Tauri. Features a sleek UI with task management, customizable sessions, audio notifications, and dynamic theming with a custom icon design.
 
-## Features
+![Pomodoro Timer](src-tauri/icons/icon.png)
 
+> **Built for productivity enthusiasts** - A beautiful, feature-rich Pomodoro Timer that helps you stay focused and organized.
+
+## ✨ Features
+
+### 🎯 Core Functionality
 - **Timer Management**: Customizable work and break sessions (25+5 or 45+15 minute presets)
 - **Task Integration**: Built-in todo list with add, edit, delete, and complete functionality
 - **Audio Notifications**: Sound effects for timer completion and tick sounds
-- **Theme Support**: Dark and light mode with smooth transitions
 - **Session Tracking**: Monitor your productivity sessions
-- **Cross-Platform**: Desktop app for Windows, macOS, and Linux
+
+### 🎨 User Experience
+- **Dynamic Theming**: Beautiful dark and light modes with smooth transitions
+  - Auto-adapts to system preferences
+  - Manual theme toggle with instant switching
+  - Consistent color schemes across all components
+- **Custom Icon Design**: Professional pomodoro-themed icon for desktop integration
+  - Scalable vector-based design
+  - Platform-optimized formats (PNG, ICO, ICNS)
+  - Integrated with system application menus
+
+### 🖥️ Platform Integration
+- **Cross-Platform**: Native desktop app for Windows, macOS, and Linux
+- **System Integration**: Appears in application menus with custom icon
+- **Standalone Executable**: No need for development environment after build
+- **Desktop Shortcuts**: One-click access from desktop or taskbar
 
 ## Tech Stack
 
@@ -33,7 +52,7 @@ A modern, cross-platform Pomodoro Timer built with Svelte and Tauri. Features a 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/pomodoro-timer.git
+   git clone https://github.com/VinayakSawant859/pomodoro-timer.git
    cd pomodoro-timer
    ```
 
@@ -52,13 +71,91 @@ A modern, cross-platform Pomodoro Timer built with Svelte and Tauri. Features a 
    npm run tauri:build
    ```
 
-## Usage
+### 🎨 Custom Icon Setup
 
-1. **Start a Session**: Choose from preset sessions or create custom timings
-2. **Manage Tasks**: Click "Show Tasks" to access your todo list
-3. **Audio Feedback**: Enable sound notifications for completion alerts
-4. **Theme Toggle**: Switch between light and dark modes
-5. **Track Progress**: Monitor completed sessions and tasks
+The app includes a custom pomodoro-themed icon. To customize it further:
+
+1. Replace `src-tauri/icons/icon.ico` with your design
+2. Regenerate all icon formats:
+   ```bash
+   # Convert to required formats (requires ImageMagick)
+   cd src-tauri/icons
+   magick icon.ico -resize 32x32 32x32.png
+   magick icon.ico -resize 128x128 128x128.png  
+   magick icon.ico -resize 256x256 128x128@2x.png
+   ```
+3. Rebuild the application:
+   ```bash
+   npm run tauri:build
+   ```
+
+### 🌙 Theme System
+
+The dynamic theming system uses CSS custom properties:
+
+- **Auto Detection**: Follows system dark/light mode preference
+- **Manual Toggle**: Theme switcher in the application header
+- **Smooth Transitions**: Animated theme changes with CSS transitions
+- **Consistent Design**: Unified color palette across all components
+
+**Theme Variables:**
+```css
+:root {
+  --bg-primary: #ffffff;
+  --text-primary: #333333;
+  --accent: #e74c3c;
+  /* ... more variables */
+}
+
+[data-theme="dark"] {
+  --bg-primary: #1a1a1a;
+  --text-primary: #ffffff;
+  --accent: #ff6b6b;
+  /* ... dark mode overrides */
+}
+```
+
+## 📱 Application Showcase
+
+### Icon Design
+- **Custom Pomodoro Icon**: Professional tomato-themed design optimized for all platforms
+- **Multiple Formats**: PNG, ICO, ICNS for Windows, Linux, and macOS compatibility
+- **Scalable Design**: Looks crisp at all sizes from 16x16 to 512x512 pixels
+
+### Theme Demonstrations
+| Light Mode | Dark Mode |
+|------------|-----------|
+| Clean, bright interface with red accent | Elegant dark interface with warm red highlights |
+| Perfect for daytime productivity | Ideal for evening work sessions |
+| Easy on the eyes in bright environments | Reduces eye strain in low light |
+
+### Desktop Integration
+- **Application Menu**: Appears with custom icon in system application launchers
+- **Taskbar/Dock**: Shows branded icon when running
+- **Desktop Shortcut**: One-click access with recognizable pomodoro icon
+- **Native Notifications**: System-integrated timer completion alerts
+
+## 🚀 Usage
+
+### Basic Workflow
+1. **Start a Session**: Choose from preset sessions (25+5, 45+15) or create custom timings
+2. **Manage Tasks**: Click "Show Tasks" to access your integrated todo list
+3. **Audio Feedback**: Enable sound notifications for completion alerts and ambient sounds
+4. **Theme Toggle**: Switch between light and dark modes using the theme button
+5. **Track Progress**: Monitor completed sessions and task completion
+
+### 🎨 Personalization
+- **Theme Switching**: Click the theme toggle in the header for instant light/dark mode switching
+- **Custom Icon**: The app uses a professional pomodoro-themed icon visible in:
+  - System application menu
+  - Taskbar/dock when running
+  - Desktop shortcuts
+  - Window title bars
+
+### 📱 Installation Methods
+- **Development**: `npm run tauri:dev` for testing
+- **Standalone**: `npm run tauri:build` creates installer packages
+- **System Integration**: Install via generated .rpm/.deb/.msi files for full desktop integration
 
 ## Project Structure
 
