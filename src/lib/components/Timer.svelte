@@ -41,18 +41,18 @@
         return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
     }
 
-    function startTimer() {
+    async function startTimer() {
         if (!$timerStore.isRunning) {
-            timerStore.start();
+            await timerStore.start();
             audioStore.playStart(); // Play start sound immediately
-            interval = setInterval(() => {
+            interval = setInterval(async () => {
                 timerStore.tick();
 
                 // Check if session is complete
                 if ($timerStore.timeRemaining <= 0) {
                     clearInterval(interval);
                     audioStore.playComplete();
-                    timerStore.completeSession();
+                    await timerStore.completeSession(false); // false = not interrupted
                 }
             }, 1000);
         }
@@ -72,8 +72,8 @@
         }
     }
 
-    function stopTimer() {
-        timerStore.stop();
+    async function stopTimer() {
+        await timerStore.stop();
         audioStore.playStop();
         clearInterval(interval);
     }

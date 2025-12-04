@@ -1,13 +1,20 @@
 <script lang="ts">
-    import { taskStore, timerStore } from "$lib/stores";
-    import type { Task } from "$lib/stores";
+    import { taskStore, timerStore, statsStore } from "$lib/stores";
+    import type { Task, DailyStats } from "$lib/stores";
+    import { onMount } from 'svelte';
 
     let newTaskText = "";
     let editingTask: Task | null = null;
     let editText = "";
+    let showStats = false;
 
     $: incompleteTasks = $taskStore.filter((task) => !task.completed);
     $: completedTasks = $taskStore.filter((task) => task.completed);
+
+    onMount(async () => {
+        // Load daily stats for today
+        await statsStore.loadToday();
+    });
 
     async function addTask() {
         if (newTaskText.trim()) {
@@ -110,6 +117,33 @@
             </svg>
             Add
         </button>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats-section">
+        <button 
+            class="stats-toggle" 
+            on:click={() => showStats = !showStats}
+        >
+            📊 Today's Stats {showStats ? '▼' : '▶'}
+        </button>
+        
+        {#if showStats && $statsStore}
+            <div class="stats-content">
+                <div class="stat-item">
+                    <span class="stat-label">🍅 Pomodoros:</span>
+                    <span class="stat-value">{$statsStore.pomodoros_completed}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">⏱️ Work Time:</span>
+                    <span class="stat-value">{Math.floor($statsStore.total_work_time / 60)}h {$statsStore.total_work_time % 60}m</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">✅ Tasks Done:</span>
+                    <span class="stat-value">{$statsStore.tasks_completed}</span>
+                </div>
+            </div>
+        {/if}
     </div>
 
     <div class="task-sections">
@@ -507,6 +541,59 @@
     .empty-state h3 {
         margin-bottom: 0.5rem;
         color: var(--text-secondary);
+    }
+
+    /* Stats Section */
+    .stats-section {
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+
+    .stats-toggle {
+        width: 100%;
+        padding: 1rem;
+        background: var(--surface-color);
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        color: var(--text-color);
+    }
+
+    .stats-toggle:hover {
+        background: var(--surface-hover);
+    }
+
+    .stats-content {
+        padding: 1rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--accent-color);
     }
 
     @media (max-width: 768px) {
