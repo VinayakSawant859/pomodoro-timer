@@ -1,8 +1,14 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { timerStore, taskStore, themeStore } from "$lib/stores";
+    import {
+        timerStore,
+        taskStore,
+        themeStore,
+        sessionHistoryStore,
+    } from "$lib/stores";
     import Timer from "$lib/components/Timer.svelte";
     import TaskManager from "$lib/components/TaskManager.svelte";
+    import SessionProgress from "$lib/components/SessionProgress.svelte";
     import ThemeToggle from "$lib/components/ThemeToggle.svelte";
 
     let showTasks = $state(false);
@@ -16,6 +22,24 @@
             await taskStore.load();
         } catch (error) {
             console.error("Failed to load tasks:", error);
+        }
+
+        // Load today's session history and initialize timer state
+        try {
+            const todayHistory = await sessionHistoryStore.loadToday();
+
+            // Update timer store with today's session count
+            if (todayHistory) {
+                timerStore.update((state) => ({
+                    ...state,
+                    dailySessionCount:
+                        todayHistory.total_work_sessions +
+                        todayHistory.total_break_sessions,
+                    sessionNumber: todayHistory.total_work_sessions + 1,
+                }));
+            }
+        } catch (error) {
+            console.error("Failed to load session history:", error);
         }
     });
 </script>
@@ -72,14 +96,19 @@
     </header>
 
     <div class="content">
-        <div class="flip-card" class:flipped={showTasks}>
-            <div class="flip-card-inner">
-                <div class="flip-card-front">
-                    <Timer />
+        <div class="main-content">
+            <div class="flip-card" class:flipped={showTasks}>
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <Timer />
+                    </div>
+                    <div class="flip-card-back">
+                        <TaskManager />
+                    </div>
                 </div>
-                <div class="flip-card-back">
-                    <TaskManager />
-                </div>
+            </div>
+            <div class="session-progress-container">
+                <SessionProgress />
             </div>
         </div>
     </div>
@@ -231,12 +260,24 @@
         padding: 2rem 0;
     }
 
+    .main-content {
+        width: 100%;
+        max-width: 800px;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
     .flip-card {
         background-color: transparent;
         width: 100%;
-        max-width: 800px;
-        height: 600px;
+        height: auto;
         perspective: 1000px;
+    }
+
+    .session-progress-container {
+        width: 100%;
+        margin-top: 2rem;
     }
 
     .flip-card-inner {
@@ -254,25 +295,55 @@
 
     .flip-card-front,
     .flip-card-back {
-        position: absolute;
         width: 100%;
-        height: 100%;
+        min-height: 500px;
         -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
     }
 
+    .flip-card-front {
+        position: relative;
+    }
+
     .flip-card-back {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
         transform: rotateY(180deg);
     }
 
     @media (max-width: 768px) {
-        .content {
-            flex-direction: column;
+        .main-content {
             gap: 1.5rem;
         }
 
-        .content > :global(*:last-child) {
-            width: 100%;
+        .flip-card-front,
+        .flip-card-back {
+            min-height: 450px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .flip-card-front,
+        .flip-card-back {
+            min-height: 400px;
+        }
+
+        .header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .header-left {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
         }
     }
 </style>

@@ -143,9 +143,11 @@
                 <div class="session-type">{sessionTypeDisplay}</div>
                 <div class="time">{timeDisplay}</div>
                 <div class="session-info">
-                    Session {$timerStore.sessionsCompleted + 1} • {$timerStore
+                    Session {$timerStore.sessionNumber} • {$timerStore
                         .currentSession.duration}min {$timerStore.currentSession
-                        .type}
+                        .type === "work"
+                        ? "work"
+                        : "break"}
                 </div>
             </div>
         </div>
