@@ -27,7 +27,15 @@
             "providerShortName": null,
             "signingIdentity": null
         },
-        "resources": ["../static/*.wav"],
+        "resources": [
+            "../static/timer-start.wav",
+            "../static/timer-stop.wav",
+            "../static/timer-complete.wav",
+            "../static/task-add.wav",
+            "../static/task-delete-timer-reset.wav",
+            "../static/5min-break-start.wav",
+            "../static/5min-break-complete.wav"
+        ],
         "shortDescription": "",
         "windows": {
             "certificateThumbprint": null,

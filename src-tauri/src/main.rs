@@ -602,31 +602,47 @@ async fn play_sound_file(sound_name: String, app_handle: tauri::AppHandle) -> Re
     // Try multiple paths to find the audio file
     let mut audio_file_path: Option<PathBuf> = None;
     
-    // Try 1: Resource directory (production)
+    // Try 1: Resource directory root (production)
     if let Ok(resource_path) = app_handle.path().resource_dir() {
         let path = resource_path.join(&file_name);
+        println!("Trying resource path: {:?}, exists: {}", path, path.exists());
         if path.exists() {
             audio_file_path = Some(path);
+        }
+        
+        // Try 1b: Resource directory with _up_/static subdirectory (production)
+        if audio_file_path.is_none() {
+            let path = resource_path.join("_up_").join("static").join(&file_name);
+            println!("Trying resource _up_/static path: {:?}, exists: {}", path, path.exists());
+            if path.exists() {
+                audio_file_path = Some(path);
+            }
         }
     }
     
     // Try 2: Static folder in project root (development)
     if audio_file_path.is_none() {
-        // Get current executable directory and go to project root
-        let current_dir = std::env::current_dir()?;
-        let path = current_dir.join("..").join("static").join(&file_name);
-        if path.exists() {
-            audio_file_path = Some(path);
+        if let Ok(current_dir) = std::env::current_dir() {
+            let path = current_dir.join("..").join("static").join(&file_name);
+            println!("Trying dev path: {:?}, exists: {}", path, path.exists());
+            if path.exists() {
+                audio_file_path = Some(path);
+            }
         }
     }
     
     // Try to read and decode the audio file
     if let Some(path) = audio_file_path {
+        println!("Playing audio from: {:?}", path);
         if let Ok(file) = std::fs::File::open(&path) {
             let source = Decoder::new(std::io::BufReader::new(file))?;
             sink.append(source);
             sink.sleep_until_end();
+        } else {
+            eprintln!("Failed to open audio file: {:?}", path);
         }
+    } else {
+        eprintln!("Audio file not found: {}", file_name);
     }
     
     Ok(())

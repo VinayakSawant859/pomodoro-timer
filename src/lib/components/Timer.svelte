@@ -43,8 +43,8 @@
 
     function getTodayDate(): string {
         const today = new Date();
-        const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, "0");
+        const month = String(today.getMonth() + 1).padStart(2, "0");
         return `${day}/${month}`;
     }
 
@@ -91,9 +91,12 @@
     // Watch for timer state changes and start interval if timer is running
     $effect(() => {
         if ($timerStore.isRunning && !interval) {
-            console.log('Timer is running, starting interval...');
+            console.log("Timer is running, starting interval...");
             // Play appropriate start sound based on session type
-            if ($timerStore.currentSession.type === 'break' && $timerStore.currentSession.duration === 5) {
+            if (
+                $timerStore.currentSession.type === "break" &&
+                $timerStore.currentSession.duration === 5
+            ) {
                 audioStore.playBreakStart();
             } else {
                 audioStore.playStart();
@@ -106,7 +109,10 @@
                     clearInterval(interval);
                     interval = undefined as any;
                     // Play appropriate complete sound based on session type
-                    if ($timerStore.currentSession.type === 'break' && $timerStore.currentSession.duration === 5) {
+                    if (
+                        $timerStore.currentSession.type === "break" &&
+                        $timerStore.currentSession.duration === 5
+                    ) {
                         audioStore.playBreakComplete();
                     } else {
                         audioStore.playComplete();
@@ -115,7 +121,7 @@
                 }
             }, 1000);
         } else if (!$timerStore.isRunning && interval) {
-            console.log('Timer stopped, clearing interval...');
+            console.log("Timer stopped, clearing interval...");
             clearInterval(interval);
             interval = undefined as any;
         }
@@ -193,7 +199,8 @@
                     fill="none"
                     stroke="currentColor"
                 >
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"
+                    ></rect>
                 </svg>
                 Stop
             </button>

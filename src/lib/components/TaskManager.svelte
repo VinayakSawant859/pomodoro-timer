@@ -7,7 +7,7 @@
     let editingTask: Task | null = null;
     let editText = "";
     let showStats = false;
-    
+
     // Callback prop to flip card and start timer
     export let onStartTask: (() => void) | undefined = undefined;
 
@@ -18,19 +18,19 @@
     function formatDate(dateString: string): string {
         try {
             const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, "0");
+            const month = String(date.getMonth() + 1).padStart(2, "0");
             return `${day}/${month}`;
         } catch {
-            return '';
+            return "";
         }
     }
 
     // Get today's date in dd/mm format
     function getTodayDate(): string {
         const today = new Date();
-        const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, "0");
+        const month = String(today.getMonth() + 1).padStart(2, "0");
         return `${day}/${month}`;
     }
 
@@ -216,13 +216,16 @@
                                     <div class="task-text-wrapper">
                                         <span
                                             class="task-text"
-                                            on:dblclick={() => startEditTask(task)}
+                                            on:dblclick={() =>
+                                                startEditTask(task)}
                                             role="button"
                                             tabindex="0"
                                         >
                                             {task.text}
                                         </span>
-                                        <span class="task-date">{formatDate(task.created_at)}</span>
+                                        <span class="task-date"
+                                            >{formatDate(task.created_at)}</span
+                                        >
                                     </div>
                                 {/if}
                             </div>
@@ -322,7 +325,11 @@
                                 <div class="task-text-wrapper">
                                     <span class="task-text">{task.text}</span>
                                     {#if task.completed_at}
-                                        <span class="task-date">✓ {formatDate(task.completed_at)}</span>
+                                        <span class="task-date"
+                                            >✓ {formatDate(
+                                                task.completed_at,
+                                            )}</span
+                                        >
                                     {/if}
                                 </div>
                             </div>

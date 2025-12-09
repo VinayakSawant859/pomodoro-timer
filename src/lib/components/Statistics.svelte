@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { onMount, onDestroy } from 'svelte';
-    import { statsStore, sessionHistoryStore } from '$lib/stores';
-    import Chart from 'chart.js/auto';
+    import { onMount, onDestroy } from "svelte";
+    import { statsStore, sessionHistoryStore } from "$lib/stores";
+    import Chart from "chart.js/auto";
 
     export let onClose: () => void;
 
@@ -37,8 +37,8 @@
         for (let i = 6; i >= 0; i--) {
             const date = new Date(today);
             date.setDate(date.getDate() - i);
-            const dateStr = date.toISOString().split('T')[0];
-            
+            const dateStr = date.toISOString().split("T")[0];
+
             try {
                 const stats = await statsStore.loadDaily(dateStr);
                 weekData.push({
@@ -46,7 +46,7 @@
                     label: formatWeekDay(date),
                     pomodoros: stats?.pomodoros_completed || 0,
                     workTime: stats?.total_work_time || 0,
-                    tasks: stats?.tasks_completed || 0
+                    tasks: stats?.tasks_completed || 0,
                 });
             } catch {
                 weekData.push({
@@ -54,7 +54,7 @@
                     label: formatWeekDay(date),
                     pomodoros: 0,
                     workTime: 0,
-                    tasks: 0
+                    tasks: 0,
                 });
             }
         }
@@ -63,100 +63,112 @@
     }
 
     function formatWeekDay(date: Date): string {
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         return days[date.getDay()];
     }
 
     function createTodayChart() {
         if (!todayChartCanvas) return;
 
-        const ctx = todayChartCanvas.getContext('2d');
+        const ctx = todayChartCanvas.getContext("2d");
         if (!ctx) return;
 
         const dailyHistory = $sessionHistoryStore;
-        const workSessions = dailyHistory?.sessions.filter(s => s.type === 'work').length || 0;
-        const shortBreaks = dailyHistory?.sessions.filter(s => s.type === 'short_break').length || 0;
-        const longBreaks = dailyHistory?.sessions.filter(s => s.type === 'long_break').length || 0;
+        const workSessions =
+            dailyHistory?.sessions.filter((s) => s.type === "work").length || 0;
+        const shortBreaks =
+            dailyHistory?.sessions.filter((s) => s.type === "short_break")
+                .length || 0;
+        const longBreaks =
+            dailyHistory?.sessions.filter((s) => s.type === "long_break")
+                .length || 0;
         const workTime = dailyHistory?.total_work_time || 0;
 
         todayChart = new Chart(ctx, {
-            type: 'bar',
+            type: "bar",
             data: {
-                labels: ['Work Sessions', 'Short Breaks', 'Long Breaks', 'Work Time (min)'],
-                datasets: [{
-                    label: "Today's Activity",
-                    data: [workSessions, shortBreaks, longBreaks, workTime],
-                    backgroundColor: [
-                        'rgba(99, 102, 241, 0.7)',
-                        'rgba(16, 185, 129, 0.7)',
-                        'rgba(245, 158, 11, 0.7)',
-                        'rgba(139, 92, 246, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(99, 102, 241, 1)',
-                        'rgba(16, 185, 129, 1)',
-                        'rgba(245, 158, 11, 1)',
-                        'rgba(139, 92, 246, 1)'
-                    ],
-                    borderWidth: 2
-                }]
+                labels: [
+                    "Work Sessions",
+                    "Short Breaks",
+                    "Long Breaks",
+                    "Work Time (min)",
+                ],
+                datasets: [
+                    {
+                        label: "Today's Activity",
+                        data: [workSessions, shortBreaks, longBreaks, workTime],
+                        backgroundColor: [
+                            "rgba(99, 102, 241, 0.7)",
+                            "rgba(16, 185, 129, 0.7)",
+                            "rgba(245, 158, 11, 0.7)",
+                            "rgba(139, 92, 246, 0.7)",
+                        ],
+                        borderColor: [
+                            "rgba(99, 102, 241, 1)",
+                            "rgba(16, 185, 129, 1)",
+                            "rgba(245, 158, 11, 1)",
+                            "rgba(139, 92, 246, 1)",
+                        ],
+                        borderWidth: 2,
+                    },
+                ],
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        display: false
+                        display: false,
                     },
                     title: {
                         display: true,
                         text: "Today's Session Statistics",
                         font: {
                             size: 16,
-                            weight: 'bold'
-                        }
-                    }
+                            weight: "bold",
+                        },
+                    },
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1
-                        }
-                    }
-                }
-            }
+                            stepSize: 1,
+                        },
+                    },
+                },
+            },
         });
     }
 
     function createWeeklyChart() {
         if (!weeklyChartCanvas || weeklyData.length === 0) return;
 
-        const ctx = weeklyChartCanvas.getContext('2d');
+        const ctx = weeklyChartCanvas.getContext("2d");
         if (!ctx) return;
 
         weeklyChart = new Chart(ctx, {
-            type: 'line',
+            type: "line",
             data: {
-                labels: weeklyData.map(d => d.label),
+                labels: weeklyData.map((d) => d.label),
                 datasets: [
                     {
-                        label: 'Pomodoros',
-                        data: weeklyData.map(d => d.pomodoros),
-                        borderColor: 'rgba(99, 102, 241, 1)',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        label: "Pomodoros",
+                        data: weeklyData.map((d) => d.pomodoros),
+                        borderColor: "rgba(99, 102, 241, 1)",
+                        backgroundColor: "rgba(99, 102, 241, 0.1)",
                         tension: 0.4,
-                        fill: true
+                        fill: true,
                     },
                     {
-                        label: 'Tasks Completed',
-                        data: weeklyData.map(d => d.tasks),
-                        borderColor: 'rgba(16, 185, 129, 1)',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        label: "Tasks Completed",
+                        data: weeklyData.map((d) => d.tasks),
+                        borderColor: "rgba(16, 185, 129, 1)",
+                        backgroundColor: "rgba(16, 185, 129, 0.1)",
                         tension: 0.4,
-                        fill: true
-                    }
-                ]
+                        fill: true,
+                    },
+                ],
             },
             options: {
                 responsive: true,
@@ -164,42 +176,51 @@
                 plugins: {
                     legend: {
                         display: true,
-                        position: 'top'
+                        position: "top",
                     },
                     title: {
                         display: true,
-                        text: 'Weekly Progress (Last 7 Days)',
+                        text: "Weekly Progress (Last 7 Days)",
                         font: {
                             size: 16,
-                            weight: 'bold'
-                        }
-                    }
+                            weight: "bold",
+                        },
+                    },
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1
-                        }
-                    }
-                }
-            }
+                            stepSize: 1,
+                        },
+                    },
+                },
+            },
         });
     }
 
     function getTodayDate(): string {
         const today = new Date();
-        const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, "0");
+        const month = String(today.getMonth() + 1).padStart(2, "0");
         return `${day}/${month}`;
     }
 </script>
 
 <div class="stats-overlay" on:click={onClose} role="presentation">
-    <div class="stats-modal" on:click|stopPropagation role="dialog" aria-modal="true">
+    <div
+        class="stats-modal"
+        on:click|stopPropagation
+        role="dialog"
+        aria-modal="true"
+    >
         <div class="stats-header">
             <h2>📊 Statistics Dashboard</h2>
-            <button class="close-btn" on:click={onClose} aria-label="Close statistics">
+            <button
+                class="close-btn"
+                on:click={onClose}
+                aria-label="Close statistics"
+            >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -214,21 +235,28 @@
                     <div class="summary-card">
                         <div class="card-icon">🍅</div>
                         <div class="card-content">
-                            <div class="card-value">{$statsStore.pomodoros_completed}</div>
+                            <div class="card-value">
+                                {$statsStore.pomodoros_completed}
+                            </div>
                             <div class="card-label">Pomodoros Today</div>
                         </div>
                     </div>
                     <div class="summary-card">
                         <div class="card-icon">⏱️</div>
                         <div class="card-content">
-                            <div class="card-value">{Math.floor($statsStore.total_work_time / 60)}h {$statsStore.total_work_time % 60}m</div>
+                            <div class="card-value">
+                                {Math.floor($statsStore.total_work_time / 60)}h {$statsStore.total_work_time %
+                                    60}m
+                            </div>
                             <div class="card-label">Work Time</div>
                         </div>
                     </div>
                     <div class="summary-card">
                         <div class="card-icon">✅</div>
                         <div class="card-content">
-                            <div class="card-value">{$statsStore.tasks_completed}</div>
+                            <div class="card-value">
+                                {$statsStore.tasks_completed}
+                            </div>
                             <div class="card-label">Tasks Done</div>
                         </div>
                     </div>

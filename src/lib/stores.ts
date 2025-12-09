@@ -169,7 +169,7 @@ const createTimerStore = () => {
                     // Auto-complete the task when a work session completes successfully
                     if (!interrupted && state.currentSession.type === 'work' && state.currentTaskId) {
                         console.log('Work session completed, auto-completing task:', state.currentTaskId);
-                        taskStore.complete(state.currentTaskId).catch(err => 
+                        taskStore.complete(state.currentTaskId).catch(err =>
                             console.error('Failed to auto-complete task:', err)
                         );
                     }
