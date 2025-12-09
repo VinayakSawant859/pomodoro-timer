@@ -7,9 +7,32 @@
     let editingTask: Task | null = null;
     let editText = "";
     let showStats = false;
+    
+    // Callback prop to flip card and start timer
+    export let onStartTask: (() => void) | undefined = undefined;
 
     $: incompleteTasks = $taskStore.filter((task) => !task.completed);
     $: completedTasks = $taskStore.filter((task) => task.completed);
+
+    // Format date as dd/mm
+    function formatDate(dateString: string): string {
+        try {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            return `${day}/${month}`;
+        } catch {
+            return '';
+        }
+    }
+
+    // Get today's date in dd/mm format
+    function getTodayDate(): string {
+        const today = new Date();
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        return `${day}/${month}`;
+    }
 
     onMount(async () => {
         // Load tasks and daily stats for today
@@ -73,6 +96,10 @@
     function startTimerWithTask(taskId: string) {
         if (!$timerStore.isRunning) {
             timerStore.start(taskId);
+            // Flip card to show timer when task is started
+            if (onStartTask) {
+                onStartTask();
+            }
         }
     }
 
@@ -123,7 +150,7 @@
     <!-- Stats Section -->
     <div class="stats-section">
         <button class="stats-toggle" on:click={() => (showStats = !showStats)}>
-            📊 Today's Stats {showStats ? "▼" : "▶"}
+            📊 Today's Stats ({getTodayDate()}) {showStats ? "▼" : "▶"}
         </button>
 
         {#if showStats && $statsStore}
@@ -163,10 +190,9 @@
                                 task.id}
                         >
                             <div class="task-content">
-                                <button
+                                <div
                                     class="task-checkbox"
-                                    on:click={() => toggleTaskComplete(task)}
-                                    aria-label="Mark task as complete"
+                                    title="Task will be marked complete when timer finishes"
                                 >
                                     <svg
                                         class="icon"
@@ -176,7 +202,7 @@
                                     >
                                         <circle cx="12" cy="12" r="10"></circle>
                                     </svg>
-                                </button>
+                                </div>
 
                                 {#if editingTask?.id === task.id}
                                     <input
@@ -187,14 +213,17 @@
                                         class="edit-input"
                                     />
                                 {:else}
-                                    <span
-                                        class="task-text"
-                                        on:dblclick={() => startEditTask(task)}
-                                        role="button"
-                                        tabindex="0"
-                                    >
-                                        {task.text}
-                                    </span>
+                                    <div class="task-text-wrapper">
+                                        <span
+                                            class="task-text"
+                                            on:dblclick={() => startEditTask(task)}
+                                            role="button"
+                                            tabindex="0"
+                                        >
+                                            {task.text}
+                                        </span>
+                                        <span class="task-date">{formatDate(task.created_at)}</span>
+                                    </div>
                                 {/if}
                             </div>
 
@@ -290,7 +319,12 @@
                                     </svg>
                                 </button>
 
-                                <span class="task-text">{task.text}</span>
+                                <div class="task-text-wrapper">
+                                    <span class="task-text">{task.text}</span>
+                                    {#if task.completed_at}
+                                        <span class="task-date">✓ {formatDate(task.completed_at)}</span>
+                                    {/if}
+                                </div>
                             </div>
 
                             <div class="task-actions">
@@ -443,10 +477,22 @@
         color: var(--success-color);
     }
 
-    .task-text {
+    .task-text-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
         flex: 1;
+    }
+
+    .task-text {
         color: var(--text-color);
         cursor: pointer;
+    }
+
+    .task-date {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        font-weight: 500;
     }
 
     .completed .task-text {

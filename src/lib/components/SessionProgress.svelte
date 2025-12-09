@@ -54,6 +54,17 @@
         return timeStr;
     }
 
+    function formatDate(dateString: string): string {
+        try {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            return `${day}/${month}`;
+        } catch {
+            return '';
+        }
+    }
+
     function getSessionIcon(type: string): string {
         switch (type) {
             case "work":
@@ -168,6 +179,7 @@
                                     session.started_at,
                                     session.completed_at,
                                 )}
+                                <span class="session-date">({formatDate(session.started_at)})</span>
                             </div>
                         </div>
                         <div class="session-status">
@@ -361,6 +373,15 @@
     .session-time {
         color: var(--text-secondary);
         font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .session-date {
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        font-weight: 500;
     }
 
     .session-status {

@@ -69,6 +69,7 @@ export interface TimerState {
     currentSessionId?: string;
     sessionNumber: number; // Current session number for the day
     dailySessionCount: number; // Total sessions completed today
+    sessionStartTime?: string; // ISO timestamp when session started
 }
 
 // Timer Store
@@ -82,7 +83,8 @@ const createTimerStore = () => {
         currentTaskId: undefined,
         currentSessionId: undefined,
         sessionNumber: 1,
-        dailySessionCount: 0
+        dailySessionCount: 0,
+        sessionStartTime: undefined
     };
 
     const { subscribe, set, update } = writable(initialState);
@@ -102,7 +104,8 @@ const createTimerStore = () => {
                     isRunning: true,
                     isPaused: false,
                     currentTaskId: taskId,
-                    currentSessionId: session.id
+                    currentSessionId: session.id,
+                    sessionStartTime: new Date().toISOString()
                 }));
             } catch (error) {
                 console.error('Failed to start session:', error);
@@ -111,7 +114,8 @@ const createTimerStore = () => {
                     ...state,
                     isRunning: true,
                     isPaused: false,
-                    currentTaskId: taskId
+                    currentTaskId: taskId,
+                    sessionStartTime: new Date().toISOString()
                 }));
             }
         },
@@ -162,13 +166,22 @@ const createTimerStore = () => {
                         }).catch(console.error);
                     }
 
+                    // Auto-complete the task when a work session completes successfully
+                    if (!interrupted && state.currentSession.type === 'work' && state.currentTaskId) {
+                        console.log('Work session completed, auto-completing task:', state.currentTaskId);
+                        taskStore.complete(state.currentTaskId).catch(err => 
+                            console.error('Failed to auto-complete task:', err)
+                        );
+                    }
+
                     // Record session in daily history
                     if (!interrupted) {
                         sessionHistoryStore.addSession({
                             type: state.currentSession.type === 'work' ? 'work' :
                                 (state.sessionsCompleted + 1) % 4 === 0 ? 'long_break' : 'short_break',
                             duration: state.currentSession.duration,
-                            completed: true
+                            completed: true,
+                            startTime: state.sessionStartTime
                         });
                     }
 
@@ -184,6 +197,7 @@ const createTimerStore = () => {
                         isRunning: false,
                         isPaused: false,
                         currentSessionId: undefined,
+                        currentTaskId: undefined, // Clear current task after completion
                         sessionNumber: newSessionType === 'work' ? state.sessionNumber + 1 : state.sessionNumber,
                         dailySessionCount: interrupted ? state.dailySessionCount : state.dailySessionCount + 1
                     };
@@ -194,7 +208,8 @@ const createTimerStore = () => {
 
                 // Refresh stats after completing a session
                 if (!interrupted) {
-                    statsStore.loadToday();
+                    console.log('Session completed, refreshing stats...');
+                    statsStore.loadToday().catch(err => console.error('Failed to refresh stats:', err));
                 }
             });
         },
@@ -245,16 +260,21 @@ const createTaskStore = () => {
             try {
                 console.log('Loading tasks from database...');
                 const tasks = await invoke<Task[]>('get_tasks');
-                console.log('Tasks loaded:', tasks.length, 'tasks');
+                console.log('Tasks loaded from database:', tasks.length, 'tasks');
+                console.log('Tasks:', tasks);
                 set(tasks);
             } catch (error) {
-                console.warn('Tauri not available, using local storage');
+                console.error('Failed to load tasks from database:', error);
+                console.warn('Falling back to localStorage');
                 // Fallback to localStorage
                 const stored = localStorage.getItem('pomodoro-tasks');
                 if (stored) {
                     const tasks = JSON.parse(stored);
-                    console.log('Fallback tasks loaded:', tasks.length, 'tasks');
+                    console.log('Fallback tasks loaded from localStorage:', tasks.length, 'tasks');
                     set(tasks);
+                } else {
+                    console.log('No tasks found in localStorage either');
+                    set([]);
                 }
             }
         },
@@ -270,13 +290,17 @@ const createTaskStore = () => {
             };
 
             try {
+                console.log('Adding task to database:', text);
                 const tauriTask = await invoke<Task>('add_task', { text });
+                console.log('Task added to database:', tauriTask);
                 update(tasks => {
                     const newTasks = [tauriTask, ...tasks];
                     return newTasks;
                 });
                 return tauriTask;
             } catch (error) {
+                console.error('Failed to add task to database:', error);
+                console.log('Falling back to localStorage for task:', text);
                 // Fallback to localStorage
                 update(tasks => {
                     const newTasks = [task, ...tasks];
@@ -411,7 +435,18 @@ const createStatsStore = () => {
                 console.log('Loading daily stats for:', date);
                 const stats = await invoke<DailyStats>('get_daily_stats', { date });
                 console.log('Daily stats loaded:', stats);
-                set(stats);
+                if (stats) {
+                    set(stats);
+                } else {
+                    console.warn('Stats returned null, using empty stats');
+                    const emptyStats: DailyStats = {
+                        date,
+                        pomodoros_completed: 0,
+                        total_work_time: 0,
+                        tasks_completed: 0
+                    };
+                    set(emptyStats);
+                }
                 return stats;
             } catch (error) {
                 console.error('Failed to load daily stats:', error);
@@ -422,13 +457,14 @@ const createStatsStore = () => {
                     total_work_time: 0,
                     tasks_completed: 0
                 };
-                console.log('Using fallback stats:', emptyStats);
+                console.log('Using fallback stats due to error:', emptyStats);
                 set(emptyStats);
                 return emptyStats;
             }
         },
         loadToday: async function () {
             const today = new Date().toISOString().split('T')[0];
+            console.log('Loading today\'s stats for date:', today);
             return await this.loadDaily(today);
         }
     };
@@ -546,16 +582,17 @@ const createSessionHistoryStore = () => {
             return await this.loadDaily(today);
         },
 
-        addSession: (sessionData: { type: 'work' | 'short_break' | 'long_break', duration: number, completed: boolean }) => {
+        addSession: (sessionData: { type: 'work' | 'short_break' | 'long_break', duration: number, completed: boolean, startTime?: string }) => {
             const now = new Date();
             const today = now.toISOString().split('T')[0];
+            const startTime = sessionData.startTime ? new Date(sessionData.startTime) : now;
 
             const session: SessionRecord = {
                 id: crypto.randomUUID(),
                 type: sessionData.type,
                 duration: sessionData.duration,
                 completed: sessionData.completed,
-                started_at: now.toISOString(),
+                started_at: startTime.toISOString(),
                 completed_at: sessionData.completed ? now.toISOString() : undefined
             };
 

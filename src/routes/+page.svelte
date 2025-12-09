@@ -10,8 +10,10 @@
     import TaskManager from "$lib/components/TaskManager.svelte";
     import SessionProgress from "$lib/components/SessionProgress.svelte";
     import ThemeToggle from "$lib/components/ThemeToggle.svelte";
+    import Statistics from "$lib/components/Statistics.svelte";
 
     let showTasks = $state(false);
+    let showStatistics = $state(false);
 
     onMount(async () => {
         // Initialize theme from localStorage
@@ -91,6 +93,17 @@
                     </svg>
                 {/if}
             </button>
+            <button
+                class="toggle-btn stats-toggle"
+                onclick={() => (showStatistics = true)}
+                title="View Statistics"
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="12" y1="20" x2="12" y2="10"></line>
+                    <line x1="18" y1="20" x2="18" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="16"></line>
+                </svg>
+            </button>
             <ThemeToggle />
         </div>
     </header>
@@ -103,15 +116,21 @@
                         <Timer />
                     </div>
                     <div class="flip-card-back">
-                        <TaskManager />
+                        <TaskManager onStartTask={() => (showTasks = false)} />
                     </div>
                 </div>
             </div>
-            <div class="session-progress-container">
-                <SessionProgress />
-            </div>
+            {#if !showTasks}
+                <div class="session-progress-container">
+                    <SessionProgress />
+                </div>
+            {/if}
         </div>
     </div>
+
+    {#if showStatistics}
+        <Statistics onClose={() => (showStatistics = false)} />
+    {/if}
 </main>
 
 <style>

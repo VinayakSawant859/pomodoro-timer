@@ -41,6 +41,13 @@
         return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
     }
 
+    function getTodayDate(): string {
+        const today = new Date();
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        return `${day}/${month}`;
+    }
+
     async function startTimer() {
         if (!$timerStore.isRunning) {
             await timerStore.start();
@@ -102,6 +109,29 @@
             clearInterval(interval);
         }
     });
+
+    // Watch for timer state changes and start interval if timer is running
+    $effect(() => {
+        if ($timerStore.isRunning && !interval) {
+            console.log('Timer is running, starting interval...');
+            audioStore.playStart();
+            interval = setInterval(async () => {
+                timerStore.tick();
+
+                // Check if session is complete
+                if ($timerStore.timeRemaining <= 0) {
+                    clearInterval(interval);
+                    interval = undefined as any;
+                    audioStore.playComplete();
+                    await timerStore.completeSession(false); // false = not interrupted
+                }
+            }, 1000);
+        } else if (!$timerStore.isRunning && interval) {
+            console.log('Timer stopped, clearing interval...');
+            clearInterval(interval);
+            interval = undefined as any;
+        }
+    });
 </script>
 
 <div class="timer-container">
@@ -149,6 +179,7 @@
                         ? "work"
                         : "break"}
                 </div>
+                <div class="session-date">({getTodayDate()})</div>
             </div>
         </div>
     </div>
@@ -360,6 +391,13 @@
         font-weight: 500;
     }
 
+    .session-date {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        font-weight: 400;
+        margin-top: 0.25rem;
+    }
+
     .timer-controls {
         display: flex;
         gap: 1rem;
@@ -443,30 +481,12 @@
     }
 
     .custom-card {
-        background: linear-gradient(
-            135deg,
-            var(--background-color),
-            var(--surface-color)
-        );
+        background: var(--surface-color);
         border: 2px solid var(--border-color);
-        border-radius: 1rem;
+        border-radius: 0.75rem;
         padding: 1.5rem;
         position: relative;
         overflow: hidden;
-    }
-
-    .custom-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(
-            90deg,
-            var(--primary-color),
-            var(--primary-light)
-        );
     }
 
     .custom-inputs {
@@ -532,15 +552,11 @@
     }
 
     .btn-apply {
-        background: linear-gradient(
-            135deg,
-            var(--primary-color),
-            var(--primary-light)
-        );
+        background: var(--primary-color);
         color: white;
         border: none;
-        padding: 0.875rem 1.5rem;
-        border-radius: 0.75rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -548,19 +564,17 @@
         align-items: center;
         gap: 0.5rem;
         font-size: 0.95rem;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
     }
 
     .btn-apply:hover:not(:disabled) {
+        background: var(--primary-dark);
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
     }
 
     .btn-apply:disabled {
         opacity: 0.6;
         cursor: not-allowed;
         transform: none;
-        box-shadow: none;
     }
 
     .btn-apply .icon {
