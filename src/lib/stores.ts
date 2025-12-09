@@ -220,21 +220,27 @@ const createTimerStore = () => {
             isRunning: false,
             isPaused: false
         })),
-        reset: () => set(initialState),
+        reset: () => {
+            audioStore.playDelete();
+            set(initialState);
+        },
         update
     };
 };
 
 // Audio Store
 const createAudioStore = () => {
-    const playSound = async (soundName: 'start' | 'complete' | 'stop') => {
+    const playSound = async (soundName: string) => {
         try {
             // Try Tauri audio first, fallback to web audio
             try {
                 await invoke('play_sound', { soundName });
             } catch {
                 // Fallback to web audio
-                const audio = new Audio(`/timer-${soundName}.wav`);
+                // Determine file extension
+                const extension = soundName.includes('.mp3') ? '' : '.wav';
+                const fileName = soundName.includes('.') ? soundName : `${soundName}${extension}`;
+                const audio = new Audio(`/${fileName}`);
                 audio.volume = 0.5;
                 await audio.play();
             }
@@ -244,9 +250,13 @@ const createAudioStore = () => {
     };
 
     return {
-        playStart: () => playSound('start'),
-        playComplete: () => playSound('complete'),
-        playStop: () => playSound('stop')
+        playStart: () => playSound('timer-start'),
+        playComplete: () => playSound('timer-complete'),
+        playStop: () => playSound('timer-stop'),
+        playDelete: () => playSound('task-delete-timer-reset'),
+        playTaskAdd: () => playSound('task-add'),
+        playBreakStart: () => playSound('5min-break-start'),
+        playBreakComplete: () => playSound('5min-break-complete')
     };
 };
 
@@ -293,6 +303,7 @@ const createTaskStore = () => {
                 console.log('Adding task to database:', text);
                 const tauriTask = await invoke<Task>('add_task', { text });
                 console.log('Task added to database:', tauriTask);
+                audioStore.playTaskAdd();
                 update(tasks => {
                     const newTasks = [tauriTask, ...tasks];
                     return newTasks;
@@ -301,6 +312,7 @@ const createTaskStore = () => {
             } catch (error) {
                 console.error('Failed to add task to database:', error);
                 console.log('Falling back to localStorage for task:', text);
+                audioStore.playTaskAdd();
                 // Fallback to localStorage
                 update(tasks => {
                     const newTasks = [task, ...tasks];
@@ -373,6 +385,7 @@ const createTaskStore = () => {
             }
         },
         remove: async (id: string) => {
+            audioStore.playDelete();
             try {
                 await invoke('delete_task', { taskId: id });
                 update(tasks => {

@@ -579,6 +579,60 @@ async fn save_settings(
 
 // Audio functions
 #[tauri::command]
+async fn play_sound(sound_name: String, app_handle: tauri::AppHandle) -> Result<(), String> {
+    tokio::spawn(async move {
+        if let Err(e) = play_sound_file(sound_name, app_handle).await {
+            eprintln!("Failed to play sound: {}", e);
+        }
+    });
+    Ok(())
+}
+
+async fn play_sound_file(sound_name: String, app_handle: tauri::AppHandle) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let (_stream, stream_handle) = OutputStream::try_default()?;
+    let sink = Sink::try_new(&stream_handle)?;
+    
+    // Determine file extension (default to .wav if not specified)
+    let file_name = if sound_name.contains('.') {
+        sound_name.clone()
+    } else {
+        format!("{}.wav", sound_name)
+    };
+    
+    // Try multiple paths to find the audio file
+    let mut audio_file_path: Option<PathBuf> = None;
+    
+    // Try 1: Resource directory (production)
+    if let Ok(resource_path) = app_handle.path().resource_dir() {
+        let path = resource_path.join(&file_name);
+        if path.exists() {
+            audio_file_path = Some(path);
+        }
+    }
+    
+    // Try 2: Static folder in project root (development)
+    if audio_file_path.is_none() {
+        // Get current executable directory and go to project root
+        let current_dir = std::env::current_dir()?;
+        let path = current_dir.join("..").join("static").join(&file_name);
+        if path.exists() {
+            audio_file_path = Some(path);
+        }
+    }
+    
+    // Try to read and decode the audio file
+    if let Some(path) = audio_file_path {
+        if let Ok(file) = std::fs::File::open(&path) {
+            let source = Decoder::new(std::io::BufReader::new(file))?;
+            sink.append(source);
+            sink.sleep_until_end();
+        }
+    }
+    
+    Ok(())
+}
+
+#[tauri::command]
 async fn play_notification_sound(sound_type: String) -> Result<(), String> {
     tokio::spawn(async move {
         if let Err(e) = play_sound_internal(sound_type).await {
@@ -639,7 +693,8 @@ fn main() {
             export_data,
             get_settings,
             save_settings,
-            play_notification_sound
+            play_notification_sound,
+            play_sound
         ])
         .setup(|app| {
             // Initialize database on app startup

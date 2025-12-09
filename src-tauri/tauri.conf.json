@@ -27,7 +27,7 @@
             "providerShortName": null,
             "signingIdentity": null
         },
-        "resources": [],
+        "resources": ["../static/*.wav"],
         "shortDescription": "",
         "windows": {
             "certificateThumbprint": null,

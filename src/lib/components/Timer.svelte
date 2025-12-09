@@ -51,38 +51,16 @@
     async function startTimer() {
         if (!$timerStore.isRunning) {
             await timerStore.start();
-            audioStore.playStart(); // Play start sound immediately
-            interval = setInterval(async () => {
-                timerStore.tick();
-
-                // Check if session is complete
-                if ($timerStore.timeRemaining <= 0) {
-                    clearInterval(interval);
-                    audioStore.playComplete();
-                    await timerStore.completeSession(false); // false = not interrupted
-                }
-            }, 1000);
+            // The $effect block will handle starting the interval
         }
     }
 
-    function pauseTimer() {
+    async function pauseTimer() {
         if ($timerStore.isRunning && !$timerStore.isPaused) {
-            timerStore.pause();
+            await timerStore.stop();
+            audioStore.playStop();
             clearInterval(interval);
         }
-    }
-
-    function resumeTimer() {
-        if ($timerStore.isPaused) {
-            timerStore.resume();
-            startTimer();
-        }
-    }
-
-    async function stopTimer() {
-        await timerStore.stop();
-        audioStore.playStop();
-        clearInterval(interval);
     }
 
     function resetTimer() {
@@ -114,7 +92,12 @@
     $effect(() => {
         if ($timerStore.isRunning && !interval) {
             console.log('Timer is running, starting interval...');
-            audioStore.playStart();
+            // Play appropriate start sound based on session type
+            if ($timerStore.currentSession.type === 'break' && $timerStore.currentSession.duration === 5) {
+                audioStore.playBreakStart();
+            } else {
+                audioStore.playStart();
+            }
             interval = setInterval(async () => {
                 timerStore.tick();
 
@@ -122,7 +105,12 @@
                 if ($timerStore.timeRemaining <= 0) {
                     clearInterval(interval);
                     interval = undefined as any;
-                    audioStore.playComplete();
+                    // Play appropriate complete sound based on session type
+                    if ($timerStore.currentSession.type === 'break' && $timerStore.currentSession.duration === 5) {
+                        audioStore.playBreakComplete();
+                    } else {
+                        audioStore.playComplete();
+                    }
                     await timerStore.completeSession(false); // false = not interrupted
                 }
             }, 1000);
@@ -197,18 +185,6 @@
                 </svg>
                 Start
             </button>
-        {:else if $timerStore.isPaused}
-            <button class="btn btn-primary" onclick={resumeTimer}>
-                <svg
-                    class="icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                >
-                    <polygon points="5,3 19,12 5,21 5,3"></polygon>
-                </svg>
-                Resume
-            </button>
         {:else}
             <button class="btn btn-primary" onclick={pauseTimer}>
                 <svg
@@ -217,28 +193,11 @@
                     fill="none"
                     stroke="currentColor"
                 >
-                    <rect x="6" y="4" width="4" height="16"></rect>
-                    <rect x="14" y="4" width="4" height="16"></rect>
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                 </svg>
-                Pause
+                Stop
             </button>
         {/if}
-
-        <button
-            class="btn btn-outline"
-            onclick={stopTimer}
-            disabled={!$timerStore.isRunning && !$timerStore.isPaused}
-        >
-            <svg
-                class="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-            >
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-            </svg>
-            Stop
-        </button>
 
         <button class="btn btn-outline" onclick={resetTimer}>
             <svg
