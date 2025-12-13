@@ -215,28 +215,29 @@
         --shadow: rgba(42, 34, 24, 0.08);
     }
 
-    :global([data-theme="matcha"]) {
-        /* Matcha Green Theme - Polished */
+    :global([data-theme="forest"]) {
+        /* Forest Zen Theme - Natural & Grounded */
         /* Semantic Roles:
-           - primary: Soft sage for timer, buttons, progress
-           - background: Pale mint
-           - surface: Gentle celadon for cards
+           - primary: Forest green for timer, buttons, progress
+           - background: Natural off-white
+           - surface: Soft sage for cards
            - text-primary: Deep forest for readability
-           - text-secondary: Medium evergreen for hierarchy
+           - text-secondary: Muted sage for hierarchy
+           - accent: Sand tone for highlights
         */
-        --primary-color: #6b8c78;
-        --primary-light: #8aa797;
-        --primary-dark: #4d6b5a;
-        --success-color: #6b8c78;
-        --warning-color: #8aa797;
-        --error-color: #3d5248;
+        --primary-color: #5F8D4E;
+        --primary-light: #7AA55F;
+        --primary-dark: #4A6E3D;
+        --success-color: #5F8D4E;
+        --warning-color: #A4BE7B;
+        --error-color: #4A6E3D;
 
-        --background-color: #f5faf7;
-        --surface-color: #e8f3ed;
-        --text-color: #1f3329;
-        --text-secondary: #4a5f52;
-        --border-color: rgba(107, 140, 120, 0.25);
-        --shadow: rgba(31, 51, 41, 0.08);
+        --background-color: #F3F7F4;
+        --surface-color: #E5D9B6;
+        --text-color: #2F3E2E;
+        --text-secondary: #6B7F6A;
+        --border-color: rgba(95, 141, 78, 0.25);
+        --shadow: rgba(47, 62, 46, 0.08);
     }
 
     :global(*) {

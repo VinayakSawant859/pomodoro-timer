@@ -49,14 +49,14 @@
             academia: "Dark Academia",
             sakura: "Sakura",
             tobacco: "Tobacco",
-            matcha: "Matcha",
+            forest: "Forest Zen",
         };
         const themeName = themeNames[currentTheme] || currentTheme;
         toastStore.show(`Theme changed to ${themeName}`, "success");
     }
 
     function selectTheme(
-        theme: "light" | "dark" | "academia" | "sakura" | "tobacco" | "matcha",
+        theme: "light" | "dark" | "academia" | "sakura" | "tobacco" | "forest",
     ) {
         themeStore.set(theme);
         const themeNames: Record<string, string> = {
@@ -65,7 +65,7 @@
             academia: "Dark Academia",
             sakura: "Sakura",
             tobacco: "Tobacco",
-            matcha: "Matcha",
+            forest: "Forest Zen",
         };
         const themeName = themeNames[theme] || theme;
         toastStore.show(`Theme changed to ${themeName}`, "success");
@@ -161,9 +161,9 @@
                 fill="none"
                 stroke="currentColor"
             >
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M12 1v6m0 6v10M1 12h6m6 0h10"></path>
-                <circle cx="12" cy="12" r="8" stroke-dasharray="2 4"></circle>
+                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
             </svg>
         {/if}
     </button>
@@ -270,8 +270,8 @@
             </button>
             <button
                 class="theme-option"
-                class:active={$themeStore === "matcha"}
-                onclick={() => selectTheme("matcha")}
+                class:active={$themeStore === "forest"}
+                onclick={() => selectTheme("forest")}
             >
                 <svg
                     class="icon"
@@ -279,12 +279,11 @@
                     fill="none"
                     stroke="currentColor"
                 >
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M12 1v6m0 6v10M1 12h6m6 0h10"></path>
-                    <circle cx="12" cy="12" r="8" stroke-dasharray="2 4"
-                    ></circle>
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5"></path>
+                    <path d="M2 12l10 5 10-5"></path>
                 </svg>
-                <span>Matcha</span>
+                <span>Forest Zen</span>
             </button>
         </div>
     {/if}
