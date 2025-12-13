@@ -134,7 +134,7 @@
 
         /* Light theme */
         --background-color: #ffffff;
-        --surface-color: #f8fafc;
+        --surface-color: rgba(248, 250, 252, 0.8);
         --text-color: #1f2937;
         --text-secondary: #6b7280;
         --border-color: #e5e7eb;
@@ -143,7 +143,7 @@
 
     :global([data-theme="dark"]) {
         --background-color: #1f2937;
-        --surface-color: #374151;
+        --surface-color: rgba(55, 65, 81, 0.7);
         --text-color: #f9fafb;
         --text-secondary: #d1d5db;
         --border-color: #4b5563;
@@ -160,7 +160,7 @@
         --error-color: #8B4513;
 
         --background-color: #1E1B18;
-        --surface-color: #2A2621;
+        --surface-color: rgba(42, 38, 33, 0.7);
         --text-color: #EDE6D8;
         --text-secondary: #B6B0A4;
         --border-color: #5C3D2E;
@@ -184,7 +184,7 @@
         --error-color: #8b4862;
 
         --background-color: #fff5f2;
-        --surface-color: #ffe9e6;
+        --surface-color: rgba(255, 233, 230, 0.6);
         --text-color: #4a1f2f;
         --text-secondary: #7a5563;
         --border-color: rgba(195, 130, 158, 0.25);
@@ -208,7 +208,7 @@
         --error-color: #5c4430;
 
         --background-color: #faf7f2;
-        --surface-color: #f0ebe3;
+        --surface-color: rgba(240, 235, 227, 0.6);
         --text-color: #2a2218;
         --text-secondary: #594c3d;
         --border-color: rgba(157, 139, 112, 0.25);
@@ -233,7 +233,7 @@
         --error-color: #4A6E3D;
 
         --background-color: #F3F7F4;
-        --surface-color: #E5D9B6;
+        --surface-color: rgba(229, 217, 182, 0.5);
         --text-color: #2F3E2E;
         --text-secondary: #6B7F6A;
         --border-color: rgba(95, 141, 78, 0.25);
