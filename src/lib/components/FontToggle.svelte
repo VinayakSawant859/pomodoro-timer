@@ -18,7 +18,7 @@
         showDropdown = false;
     }
 
-    function selectFont(font: "default" | "josefin" | "cause") {
+    function selectFont(font: "default" | "josefin" | "cause" | "cabin" | "inconsolata" | "poppins") {
         fontStore.set(font);
         showDropdown = false;
         if (hoverTimeout) {
@@ -74,6 +74,27 @@
                 onclick={() => selectFont("cause")}
             >
                 <span style="font-family: 'Cause', cursive;">Cause</span>
+            </button>
+            <button
+                class="font-option"
+                class:active={$fontStore === "cabin"}
+                onclick={() => selectFont("cabin")}
+            >
+                <span style="font-family: 'Cabin Sketch', sans-serif;">Cabin Sketch</span>
+            </button>
+            <button
+                class="font-option"
+                class:active={$fontStore === "inconsolata"}
+                onclick={() => selectFont("inconsolata")}
+            >
+                <span style="font-family: 'Inconsolata', monospace;">Inconsolata</span>
+            </button>
+            <button
+                class="font-option"
+                class:active={$fontStore === "poppins"}
+                onclick={() => selectFont("poppins")}
+            >
+                <span style="font-family: 'Poppins', sans-serif;">Poppins</span>
             </button>
         </div>
     {/if}

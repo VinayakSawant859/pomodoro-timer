@@ -227,6 +227,22 @@
         font-optical-sizing: auto;
     }
 
+    :global([data-font="cabin"] body),
+    :global([data-font="cabin"] *) {
+        font-family: "Cabin Sketch", sans-serif !important;
+    }
+
+    :global([data-font="inconsolata"] body),
+    :global([data-font="inconsolata"] *) {
+        font-family: "Inconsolata", monospace !important;
+        font-optical-sizing: auto;
+    }
+
+    :global([data-font="poppins"] body),
+    :global([data-font="poppins"] *) {
+        font-family: "Poppins", sans-serif !important;
+    }
+
     .app {
         min-height: 100vh;
         display: flex;

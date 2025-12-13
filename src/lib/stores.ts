@@ -440,20 +440,24 @@ const createThemeStore = () => {
 
 // Font Store
 const createFontStore = () => {
-    const { subscribe, set, update } = writable<'default' | 'josefin' | 'cause'>('default');
+    const { subscribe, set, update } = writable<'default' | 'josefin' | 'cause' | 'cabin' | 'inconsolata' | 'poppins'>('default');
 
     return {
         subscribe,
         toggle: () => update(font => {
-            // Cycle through: default -> josefin -> cause -> default
-            const newFont = font === 'default' ? 'josefin' : font === 'josefin' ? 'cause' : 'default';
+            // Cycle through: default -> josefin -> cause -> cabin -> inconsolata -> poppins -> default
+            const newFont = font === 'default' ? 'josefin' : 
+                           font === 'josefin' ? 'cause' : 
+                           font === 'cause' ? 'cabin' : 
+                           font === 'cabin' ? 'inconsolata' : 
+                           font === 'inconsolata' ? 'poppins' : 'default';
             if (typeof window !== 'undefined') {
                 localStorage.setItem('font', newFont);
                 document.documentElement.setAttribute('data-font', newFont);
             }
             return newFont;
         }),
-        set: (font: 'default' | 'josefin' | 'cause') => {
+        set: (font: 'default' | 'josefin' | 'cause' | 'cabin' | 'inconsolata' | 'poppins') => {
             set(font);
             if (typeof window !== 'undefined') {
                 localStorage.setItem('font', font);
@@ -462,7 +466,7 @@ const createFontStore = () => {
         },
         init: () => {
             if (typeof window !== 'undefined') {
-                const stored = localStorage.getItem('font') as 'default' | 'josefin' | 'cause' | null;
+                const stored = localStorage.getItem('font') as 'default' | 'josefin' | 'cause' | 'cabin' | 'inconsolata' | 'poppins' | null;
                 const font = stored || 'default';
                 set(font);
                 document.documentElement.setAttribute('data-font', font);
