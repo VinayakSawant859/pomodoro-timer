@@ -57,7 +57,7 @@
     }
 
     function selectTheme(
-        theme: "light" | "dark" | "academia" | "sakura" | "tobacco" | "forest" | "pastel",
+        theme: "light" | "dark" | "academia" | "sakura" | "coffee" | "forest" | "pastel",
     ) {
         themeStore.set(theme);
         const themeNames: Record<string, string> = {
@@ -142,19 +142,18 @@
                 ></path>
                 <circle cx="12" cy="12" r="2"></circle>
             </svg>
-        {:else if $themeStore === "tobacco"}
+        {:else if $themeStore === "coffee"}
             <svg
                 class="icon"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
             >
-                <rect x="6" y="6" width="12" height="12" rx="2"></rect>
-                <path d="M9 6V4C9 3.4 9.4 3 10 3H14C14.6 3 15 3.4 15 4V6"
-                ></path>
-                <path
-                    d="M9 18V20C9 20.6 9.4 21 10 21H14C14.6 21 15 20.6 15 20V18"
-                ></path>
+                <path d="M17 8h1a4 4 0 0 1 0 8h-1"></path>
+                <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"></path>
+                <line x1="6" y1="2" x2="6" y2="4"></line>
+                <line x1="10" y1="2" x2="10" y2="4"></line>
+                <line x1="14" y1="2" x2="14" y2="4"></line>
             </svg>
         {:else if $themeStore === "forest"}
             <svg
@@ -263,8 +262,8 @@
             </button>
             <button
                 class="theme-option"
-                class:active={$themeStore === "tobacco"}
-                onclick={() => selectTheme("tobacco")}
+                class:active={$themeStore === "coffee"}
+                onclick={() => selectTheme("coffee")}
             >
                 <svg
                     class="icon"
@@ -272,14 +271,13 @@
                     fill="none"
                     stroke="currentColor"
                 >
-                    <rect x="6" y="6" width="12" height="12" rx="2"></rect>
-                    <path d="M9 6V4C9 3.4 9.4 3 10 3H14C14.6 3 15 3.4 15 4V6"
-                    ></path>
-                    <path
-                        d="M9 18V20C9 20.6 9.4 21 10 21H14C14.6 21 15 20.6 15 20V18"
-                    ></path>
+                    <path d="M17 8h1a4 4 0 0 1 0 8h-1"></path>
+                    <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"></path>
+                    <line x1="6" y1="2" x2="6" y2="4"></line>
+                    <line x1="10" y1="2" x2="10" y2="4"></line>
+                    <line x1="14" y1="2" x2="14" y2="4"></line>
                 </svg>
-                <span>Tobacco</span>
+                <span>Warm Coffee</span>
             </button>
             <button
                 class="theme-option"

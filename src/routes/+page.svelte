@@ -191,28 +191,29 @@
         --shadow: rgba(74, 31, 47, 0.08);
     }
 
-    :global([data-theme="tobacco"]) {
-        /* Tobacco Warm Theme - Polished */
+    :global([data-theme="coffee"]) {
+        /* Warm Coffee Theme - Cozy & Aesthetic */
         /* Semantic Roles:
-           - primary: Warm taupe for timer, buttons, progress
-           - background: Soft cream
-           - surface: Gentle sand for cards
+           - primary: Coffee brown for timer, buttons, progress
+           - background: Warm cream
+           - surface: Soft latte for cards
            - text-primary: Deep espresso for readability
-           - text-secondary: Medium brown for hierarchy
+           - text-secondary: Warm brown for hierarchy
+           - accent: Caramel highlights
         */
-        --primary-color: #9d8b70;
-        --primary-light: #b5a38a;
-        --primary-dark: #6d5d49;
-        --success-color: #9d8b70;
-        --warning-color: #b5a38a;
-        --error-color: #5c4430;
+        --primary-color: #6D4C41;
+        --primary-light: #8D6E63;
+        --primary-dark: #4E342E;
+        --success-color: #6D4C41;
+        --warning-color: #A1887F;
+        --error-color: #4E342E;
 
-        --background-color: #faf7f2;
-        --surface-color: rgba(240, 235, 227, 0.6);
-        --text-color: #2a2218;
-        --text-secondary: #594c3d;
-        --border-color: rgba(157, 139, 112, 0.25);
-        --shadow: rgba(42, 34, 24, 0.08);
+        --background-color: #F5EFE7;
+        --surface-color: rgba(161, 136, 127, 0.25);
+        --text-color: #3E2723;
+        --text-secondary: #7B5E57;
+        --border-color: rgba(109, 76, 65, 0.25);
+        --shadow: rgba(62, 39, 35, 0.08);
     }
 
     :global([data-theme="forest"]) {
