@@ -241,29 +241,30 @@
         --shadow: rgba(47, 62, 46, 0.08);
     }
 
-    :global([data-theme="minimal"]) {
-        /* Soft Minimal Theme - Calm & Focused */
+    :global([data-theme="flame"]) {
+        /* Flame Theme - Dark Fire Aesthetic */
         /* Semantic Roles:
-           - primary: Soft periwinkle for timer, buttons, progress
-           - background: Off-white for low eye strain
-           - surface: Light mint for cards
-           - text-primary: Dark slate for readability
-           - text-secondary: Medium gray for hierarchy
-           - accent: Blush highlights
+           - primary: Orange flame for timer, buttons, progress with glow
+           - background: Deep charcoal-black for dramatic depth
+           - surface: Dark elevated surface with transparency
+           - text-primary: Warm off-white for readability
+           - text-secondary: Muted warm gray for hierarchy
+           - flame-accent: Bright orange for gradients and glow
+           - ember-accent: Deep red-orange for depth (rare use)
         */
-        --primary-color: #A3BFFA;
-        --primary-light: #B8CCFB;
-        --primary-dark: #7FA1E8;
-        --success-color: #A3BFFA;
-        --warning-color: #C1E1DC;
-        --error-color: #F2C6C2;
+        --primary-color: #FF8C1A;
+        --primary-light: #FFB347;
+        --primary-dark: #C24A00;
+        --success-color: #FF8C1A;
+        --warning-color: #FFB347;
+        --error-color: #7A1E0E;
 
-        --background-color: #F6F7F9;
-        --surface-color: rgba(193, 225, 220, 0.3);
-        --text-color: #2E3440;
-        --text-secondary: #6B7280;
-        --border-color: rgba(163, 191, 250, 0.25);
-        --shadow: rgba(46, 52, 64, 0.06);
+        --background-color: #0A0705;
+        --surface-color: rgba(28, 22, 15, 0.7);
+        --text-color: #F5F1EB;
+        --text-secondary: #B8AFA3;
+        --border-color: rgba(255, 140, 26, 0.15);
+        --shadow: rgba(255, 140, 26, 0.2);
     }
 
     :global([data-theme="anime"]) {

@@ -57,7 +57,7 @@
     }
 
     function selectTheme(
-        theme: "light" | "dark" | "academia" | "sakura" | "coffee" | "forest" | "minimal" | "anime",
+        theme: "light" | "dark" | "academia" | "sakura" | "coffee" | "forest" | "flame" | "anime",
     ) {
         themeStore.set(theme);
         const themeNames: Record<string, string> = {
@@ -166,18 +166,16 @@
                 <path d="M2 17l10 5 10-5"></path>
                 <path d="M2 12l10 5 10-5"></path>
             </svg>
-        {:else if $themeStore === "minimal"}
+        {:else if $themeStore === "flame"}
             <svg
                 class="icon"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
             >
-                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
+                <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
             </svg>
-        {:else}
+        {:else if $themeStore === "anime"}
             <svg
                 class="icon"
                 viewBox="0 0 24 24"
@@ -308,8 +306,8 @@
             </button>
             <button
                 class="theme-option"
-                class:active={$themeStore === "minimal"}
-                onclick={() => selectTheme("minimal")}
+                class:active={$themeStore === "flame"}
+                onclick={() => selectTheme("flame")}
             >
                 <svg
                     class="icon"
@@ -317,11 +315,9 @@
                     fill="none"
                     stroke="currentColor"
                 >
-                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                    <line x1="3" y1="9" x2="21" y2="9"></line>
-                    <line x1="9" y1="21" x2="9" y2="9"></line>
+                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
                 </svg>
-                <span>Soft Minimal</span>
+                <span>Flame</span>
             </button>
             <button
                 class="theme-option"
