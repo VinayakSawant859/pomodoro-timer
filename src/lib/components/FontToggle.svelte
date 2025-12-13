@@ -1,13 +1,28 @@
 <script lang="ts">
     import { fontStore } from "$lib/stores";
     import { toastStore } from "$lib/stores/toastStore";
+    import { dropdownStore } from "$lib/stores/dropdownStore";
 
     let showDropdown = $state(false);
     let hoverTimeout: number | null = null;
 
+    $effect(() => {
+        const unsubscribe = dropdownStore.subscribe((activeDropdown) => {
+            if (activeDropdown !== 'font') {
+                showDropdown = false;
+                if (hoverTimeout) {
+                    clearTimeout(hoverTimeout);
+                    hoverTimeout = null;
+                }
+            }
+        });
+        return unsubscribe;
+    });
+
     function handleMouseEnter() {
         hoverTimeout = window.setTimeout(() => {
             showDropdown = true;
+            dropdownStore.open('font');
         }, 2000);
     }
 
@@ -17,20 +32,34 @@
             hoverTimeout = null;
         }
         showDropdown = false;
+        dropdownStore.close();
+    }
+
+    const fontNames: Record<string, string> = {
+        default: "Default",
+        josefin: "Josefin Sans",
+        cause: "Cause",
+        cabin: "Cabin Sketch",
+        inconsolata: "Inconsolata",
+        poppins: "Poppins"
+    };
+
+    function handleToggle() {
+        fontStore.toggle();
+        // Get the current font value to show in toast
+        let currentFont = '';
+        const unsubscribe = fontStore.subscribe(font => {
+            currentFont = font;
+        });
+        unsubscribe();
+        toastStore.show(`Font changed to ${fontNames[currentFont]}`, "success");
     }
 
     function selectFont(font: "default" | "josefin" | "cause" | "cabin" | "inconsolata" | "poppins") {
         fontStore.set(font);
-        const fontNames: Record<string, string> = {
-            default: "Default",
-            josefin: "Josefin Sans",
-            cause: "Cause",
-            cabin: "Cabin Sketch",
-            inconsolata: "Inconsolata",
-            poppins: "Poppins"
-        };
         toastStore.show(`Font changed to ${fontNames[font]}`, "success");
         showDropdown = false;
+        dropdownStore.close();
         if (hoverTimeout) {
             clearTimeout(hoverTimeout);
             hoverTimeout = null;
@@ -47,7 +76,7 @@
 >
     <button
         class="font-toggle"
-        onclick={fontStore.toggle}
+        onclick={handleToggle}
         title="Toggle font"
     >
         <svg

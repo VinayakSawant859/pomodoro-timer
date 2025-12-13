@@ -1,13 +1,28 @@
 <script lang="ts">
     import { themeStore } from "$lib/stores";
     import { toastStore } from "$lib/stores/toastStore";
+    import { dropdownStore } from "$lib/stores/dropdownStore";
 
     let showDropdown = $state(false);
     let hoverTimeout: number | null = null;
 
+    $effect(() => {
+        const unsubscribe = dropdownStore.subscribe((activeDropdown) => {
+            if (activeDropdown !== 'theme') {
+                showDropdown = false;
+                if (hoverTimeout) {
+                    clearTimeout(hoverTimeout);
+                    hoverTimeout = null;
+                }
+            }
+        });
+        return unsubscribe;
+    });
+
     function handleMouseEnter() {
         hoverTimeout = window.setTimeout(() => {
             showDropdown = true;
+            dropdownStore.open('theme');
         }, 2000);
     }
 
@@ -17,6 +32,19 @@
             hoverTimeout = null;
         }
         showDropdown = false;
+        dropdownStore.close();
+    }
+
+    function handleToggle() {
+        themeStore.toggle();
+        // Get the current theme value to show in toast
+        let currentTheme = '';
+        const unsubscribe = themeStore.subscribe(theme => {
+            currentTheme = theme;
+        });
+        unsubscribe();
+        const themeName = currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1);
+        toastStore.show(`Theme changed to ${themeName}`, "success");
     }
 
     function selectTheme(
@@ -26,6 +54,7 @@
         const themeName = theme.charAt(0).toUpperCase() + theme.slice(1);
         toastStore.show(`Theme changed to ${themeName}`, "success");
         showDropdown = false;
+        dropdownStore.close();
         if (hoverTimeout) {
             clearTimeout(hoverTimeout);
             hoverTimeout = null;
@@ -42,7 +71,7 @@
 >
     <button
         class="theme-toggle"
-        onclick={themeStore.toggle}
+        onclick={handleToggle}
         title="Toggle theme"
     >
         {#if $themeStore === "light"}
