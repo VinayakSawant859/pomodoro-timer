@@ -53,7 +53,7 @@
     <title>Pomodoro Timer</title>
 </svelte:head>
 
-<main class="app" data-theme={$themeStore}>
+<main class="app" data-theme={$themeStore} data-font={$fontStore}>
     <header class="header">
         <div class="header-left">
             <h1>Pomodoro Timer <span class="author">by vinayak</span></h1>
@@ -215,13 +215,15 @@
             font-family 0.2s ease;
     }
 
-    :global([data-font="josefin"]) {
-        font-family: "Josefin Sans", sans-serif;
+    :global([data-font="josefin"] body),
+    :global([data-font="josefin"] *) {
+        font-family: "Josefin Sans", sans-serif !important;
         font-optical-sizing: auto;
     }
 
-    :global([data-font="cause"]) {
-        font-family: "Cause", cursive;
+    :global([data-font="cause"] body),
+    :global([data-font="cause"] *) {
+        font-family: "Cause", cursive !important;
         font-optical-sizing: auto;
     }
 
