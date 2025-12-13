@@ -57,7 +57,7 @@
     }
 
     function selectTheme(
-        theme: "light" | "dark" | "academia" | "sakura" | "coffee" | "forest" | "pastel",
+        theme: "light" | "dark" | "academia" | "sakura" | "coffee" | "forest" | "minimal",
     ) {
         themeStore.set(theme);
         const themeNames: Record<string, string> = {
@@ -173,9 +173,9 @@
                 fill="none"
                 stroke="currentColor"
             >
-                <circle cx="12" cy="12" r="4"></circle>
-                <path d="M12 2v4m0 12v4M2 12h4m12 0h4"></path>
-                <path d="M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path>
+                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
             </svg>
         {/if}
     </button>
@@ -298,8 +298,8 @@
             </button>
             <button
                 class="theme-option"
-                class:active={$themeStore === "pastel"}
-                onclick={() => selectTheme("pastel")}
+                class:active={$themeStore === "minimal"}
+                onclick={() => selectTheme("minimal")}
             >
                 <svg
                     class="icon"
@@ -307,11 +307,11 @@
                     fill="none"
                     stroke="currentColor"
                 >
-                    <circle cx="12" cy="12" r="4"></circle>
-                    <path d="M12 2v4m0 12v4M2 12h4m12 0h4"></path>
-                    <path d="M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path>
+                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="9" y1="21" x2="9" y2="9"></line>
                 </svg>
-                <span>Pastel</span>
+                <span>Soft Minimal</span>
             </button>
         </div>
     {/if}

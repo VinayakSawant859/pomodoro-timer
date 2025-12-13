@@ -241,29 +241,29 @@
         --shadow: rgba(47, 62, 46, 0.08);
     }
 
-    :global([data-theme="pastel"]) {
-        /* Pastel Productivity Theme - Modern & Friendly */
+    :global([data-theme="minimal"]) {
+        /* Soft Minimal Theme - Calm & Focused */
         /* Semantic Roles:
-           - primary: Lavender blue for timer, buttons, progress
-           - background: Clean white
-           - surface: Soft purple for cards
-           - text-primary: Dark charcoal for readability
+           - primary: Soft periwinkle for timer, buttons, progress
+           - background: Off-white for low eye strain
+           - surface: Light mint for cards
+           - text-primary: Dark slate for readability
            - text-secondary: Medium gray for hierarchy
-           - accent: Pastel pink highlights
+           - accent: Blush highlights
         */
-        --primary-color: #B8C0FF;
-        --primary-light: #C8CEFF;
-        --primary-dark: #9BA5E8;
-        --success-color: #B8C0FF;
-        --warning-color: #FFD6E0;
-        --error-color: #CDB4DB;
+        --primary-color: #A3BFFA;
+        --primary-light: #B8CCFB;
+        --primary-dark: #7FA1E8;
+        --success-color: #A3BFFA;
+        --warning-color: #C1E1DC;
+        --error-color: #F2C6C2;
 
-        --background-color: #FAFAFA;
-        --surface-color: rgba(205, 180, 219, 0.15);
-        --text-color: #2B2B2B;
-        --text-secondary: #7A7A7A;
-        --border-color: rgba(184, 192, 255, 0.3);
-        --shadow: rgba(43, 43, 43, 0.06);
+        --background-color: #F6F7F9;
+        --surface-color: rgba(193, 225, 220, 0.3);
+        --text-color: #2E3440;
+        --text-secondary: #6B7280;
+        --border-color: rgba(163, 191, 250, 0.25);
+        --shadow: rgba(46, 52, 64, 0.06);
     }
 
     :global(*) {
