@@ -222,29 +222,30 @@
     }
 
     :global([data-theme="forest"]) {
-        /* Forest Theme - Deep Forest Aesthetic */
+        /* Forest Theme - Botanical Canopy Aesthetic */
         /* Semantic Roles:
-           - primary: Fresh mint accent for timer, buttons (≤10% usage)
-           - background: Deep forest base for immersive depth
-           - surface: Sage green cards for natural elevation
-           - secondary-surface: Muted sage for subtle layering
-           - text-primary: Soft off-white for readability on dark
-           - text-secondary: Muted sage-gray for hierarchy
-           - text-on-light: Dark forest for light surface text
+           - primary: Desaturated moss accent (≤8% usage on interactive elements)
+           - background: Deep earth/bark base for grounded depth
+           - surface: Natural bark tone for primary cards
+           - secondary-surface: Warm earth for subtle elevation
+           - light-surface: Paper tone for inputs/elevated elements
+           - text-primary: Warm off-white for readability
+           - text-secondary: Muted stone for hierarchy
+           - text-on-light: Deep charcoal for light backgrounds
         */
-        --primary-color: #2ED573;
-        --primary-light: #3FE38A;
-        --primary-dark: #25B85F;
-        --success-color: #2ED573;
-        --warning-color: #6F8F6A;
-        --error-color: #1E2A1E;
+        --primary-color: #6A7B5E;
+        --primary-light: #7F9270;
+        --primary-dark: #5A6B50;
+        --success-color: #6A7B5E;
+        --warning-color: #7A6F5E;
+        --error-color: #5A3B2E;
 
-        --background-color: #1F331A;
-        --surface-color: #2B4220;
-        --text-color: #ECF5EE;
-        --text-secondary: #C7D8C9;
-        --border-color: #3D5935;
-        --shadow: rgba(15, 25, 13, 0.5);
+        --background-color: #332C0F;
+        --surface-color: #474329;
+        --text-color: #F4EEEB;
+        --text-secondary: #CFC8BC;
+        --border-color: #5A5340;
+        --shadow: rgba(26, 22, 8, 0.6);
     }
 
     :global([data-theme="flame"]) {
