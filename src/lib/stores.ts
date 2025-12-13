@@ -438,6 +438,39 @@ const createThemeStore = () => {
     };
 };
 
+// Font Store
+const createFontStore = () => {
+    const { subscribe, set, update } = writable<'default' | 'josefin' | 'cause'>('default');
+
+    return {
+        subscribe,
+        toggle: () => update(font => {
+            // Cycle through: default -> josefin -> cause -> default
+            const newFont = font === 'default' ? 'josefin' : font === 'josefin' ? 'cause' : 'default';
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('font', newFont);
+                document.documentElement.setAttribute('data-font', newFont);
+            }
+            return newFont;
+        }),
+        set: (font: 'default' | 'josefin' | 'cause') => {
+            set(font);
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('font', font);
+                document.documentElement.setAttribute('data-font', font);
+            }
+        },
+        init: () => {
+            if (typeof window !== 'undefined') {
+                const stored = localStorage.getItem('font') as 'default' | 'josefin' | 'cause' | null;
+                const font = stored || 'default';
+                set(font);
+                document.documentElement.setAttribute('data-font', font);
+            }
+        }
+    };
+};
+
 // Statistics Store
 const createStatsStore = () => {
     const { subscribe, set, update } = writable<DailyStats | null>(null);
@@ -692,6 +725,7 @@ const createSessionHistoryStore = () => {
 export const timerStore = createTimerStore();
 export const taskStore = createTaskStore();
 export const themeStore = createThemeStore();
+export const fontStore = createFontStore();
 export const audioStore = createAudioStore();
 export const statsStore = createStatsStore();
 export const sessionStore = createSessionStore();

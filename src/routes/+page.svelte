@@ -4,20 +4,23 @@
         timerStore,
         taskStore,
         themeStore,
+        fontStore,
         sessionHistoryStore,
     } from "$lib/stores";
     import Timer from "$lib/components/Timer.svelte";
     import TaskManager from "$lib/components/TaskManager.svelte";
     import SessionProgress from "$lib/components/SessionProgress.svelte";
     import ThemeToggle from "$lib/components/ThemeToggle.svelte";
+    import FontToggle from "$lib/components/FontToggle.svelte";
     import Statistics from "$lib/components/Statistics.svelte";
 
     let showTasks = $state(false);
     let showStatistics = $state(false);
 
     onMount(async () => {
-        // Initialize theme from localStorage
+        // Initialize theme and font from localStorage
         themeStore.init();
+        fontStore.init();
 
         // Load tasks from database
         try {
@@ -87,6 +90,7 @@
                     <line x1="6" y1="20" x2="6" y2="16"></line>
                 </svg>
             </button>
+            <FontToggle />
             <ThemeToggle />
         </div>
     </header>
@@ -207,7 +211,18 @@
         color: var(--text-color);
         transition:
             background-color 0.2s ease,
-            color 0.2s ease;
+            color 0.2s ease,
+            font-family 0.2s ease;
+    }
+
+    :global([data-font="josefin"]) {
+        font-family: "Josefin Sans", sans-serif;
+        font-optical-sizing: auto;
+    }
+
+    :global([data-font="cause"]) {
+        font-family: "Cause", cursive;
+        font-optical-sizing: auto;
     }
 
     .app {
