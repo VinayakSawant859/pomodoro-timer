@@ -1,6 +1,6 @@
 <script lang="ts">
     import { themeStore } from "$lib/stores";
-    
+
     let showDropdown = $state(false);
     let hoverTimeout: number | null = null;
 
@@ -18,7 +18,7 @@
         showDropdown = false;
     }
 
-    function selectTheme(theme: 'light' | 'dark' | 'sakura' | 'tobacco') {
+    function selectTheme(theme: "light" | "dark" | "sakura" | "tobacco" | "matcha") {
         themeStore.set(theme);
         showDropdown = false;
         if (hoverTimeout) {
@@ -28,16 +28,25 @@
     }
 </script>
 
-<div 
+<div
     class="theme-toggle-container"
     role="group"
     aria-label="Theme selector"
     onmouseenter={handleMouseEnter}
     onmouseleave={handleMouseLeave}
 >
-    <button class="theme-toggle" onclick={themeStore.toggle} title="Toggle theme">
+    <button
+        class="theme-toggle"
+        onclick={themeStore.toggle}
+        title="Toggle theme"
+    >
         {#if $themeStore === "light"}
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+            >
                 <circle cx="12" cy="12" r="5"></circle>
                 <line x1="12" y1="1" x2="12" y2="3"></line>
                 <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -49,32 +58,71 @@
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
             </svg>
         {:else if $themeStore === "dark"}
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+            >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+                ></path>
             </svg>
         {:else if $themeStore === "sakura"}
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M12 2C12 2 10.5 3.5 10.5 6.5C10.5 9.5 12 11 12 11C12 11 13.5 9.5 13.5 6.5C13.5 3.5 12 2 12 2Z"></path>
-                <path d="M12 13C12 13 10.5 14.5 10.5 17.5C10.5 20.5 12 22 12 22C12 22 13.5 20.5 13.5 17.5C13.5 14.5 12 13 12 13Z"></path>
+            <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+            >
+                <path
+                    d="M12 2C12 2 10.5 3.5 10.5 6.5C10.5 9.5 12 11 12 11C12 11 13.5 9.5 13.5 6.5C13.5 3.5 12 2 12 2Z"
+                ></path>
+                <path
+                    d="M12 13C12 13 10.5 14.5 10.5 17.5C10.5 20.5 12 22 12 22C12 22 13.5 20.5 13.5 17.5C13.5 14.5 12 13 12 13Z"
+                ></path>
                 <circle cx="12" cy="12" r="2"></circle>
             </svg>
-        {:else}
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        {:else if $themeStore === "tobacco"}
+            <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+            >
                 <rect x="6" y="6" width="12" height="12" rx="2"></rect>
-                <path d="M9 6V4C9 3.4 9.4 3 10 3H14C14.6 3 15 3.4 15 4V6"></path>
-                <path d="M9 18V20C9 20.6 9.4 21 10 21H14C14.6 21 15 20.6 15 20V18"></path>
+                <path d="M9 6V4C9 3.4 9.4 3 10 3H14C14.6 3 15 3.4 15 4V6"
+                ></path>
+                <path
+                    d="M9 18V20C9 20.6 9.4 21 10 21H14C14.6 21 15 20.6 15 20V18"
+                ></path>
+            </svg>
+        {:else}
+            <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+            >
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 1v6m0 6v10M1 12h6m6 0h10"></path>
+                <circle cx="12" cy="12" r="8" stroke-dasharray="2 4"></circle>
             </svg>
         {/if}
     </button>
 
     {#if showDropdown}
         <div class="theme-dropdown">
-            <button 
-                class="theme-option" 
+            <button
+                class="theme-option"
                 class:active={$themeStore === "light"}
                 onclick={() => selectTheme("light")}
             >
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                >
                     <circle cx="12" cy="12" r="5"></circle>
                     <line x1="12" y1="1" x2="12" y2="3"></line>
                     <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -87,39 +135,79 @@
                 </svg>
                 <span>Light</span>
             </button>
-            <button 
-                class="theme-option" 
+            <button
+                class="theme-option"
                 class:active={$themeStore === "dark"}
                 onclick={() => selectTheme("dark")}
             >
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                >
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+                    ></path>
                 </svg>
                 <span>Dark</span>
             </button>
-            <button 
-                class="theme-option" 
+            <button
+                class="theme-option"
                 class:active={$themeStore === "sakura"}
                 onclick={() => selectTheme("sakura")}
             >
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M12 2C12 2 10.5 3.5 10.5 6.5C10.5 9.5 12 11 12 11C12 11 13.5 9.5 13.5 6.5C13.5 3.5 12 2 12 2Z"></path>
-                    <path d="M12 13C12 13 10.5 14.5 10.5 17.5C10.5 20.5 12 22 12 22C12 22 13.5 20.5 13.5 17.5C13.5 14.5 12 13 12 13Z"></path>
+                <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                >
+                    <path
+                        d="M12 2C12 2 10.5 3.5 10.5 6.5C10.5 9.5 12 11 12 11C12 11 13.5 9.5 13.5 6.5C13.5 3.5 12 2 12 2Z"
+                    ></path>
+                    <path
+                        d="M12 13C12 13 10.5 14.5 10.5 17.5C10.5 20.5 12 22 12 22C12 22 13.5 20.5 13.5 17.5C13.5 14.5 12 13 12 13Z"
+                    ></path>
                     <circle cx="12" cy="12" r="2"></circle>
                 </svg>
                 <span>Sakura</span>
             </button>
-            <button 
-                class="theme-option" 
+            <button
+                class="theme-option"
                 class:active={$themeStore === "tobacco"}
                 onclick={() => selectTheme("tobacco")}
             >
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                >
                     <rect x="6" y="6" width="12" height="12" rx="2"></rect>
-                    <path d="M9 6V4C9 3.4 9.4 3 10 3H14C14.6 3 15 3.4 15 4V6"></path>
-                    <path d="M9 18V20C9 20.6 9.4 21 10 21H14C14.6 21 15 20.6 15 20V18"></path>
+                    <path d="M9 6V4C9 3.4 9.4 3 10 3H14C14.6 3 15 3.4 15 4V6"
+                    ></path>
+                    <path
+                        d="M9 18V20C9 20.6 9.4 21 10 21H14C14.6 21 15 20.6 15 20V18"
+                    ></path>
                 </svg>
                 <span>Tobacco</span>
+            </button>
+            <button
+                class="theme-option"
+                class:active={$themeStore === "matcha"}
+                onclick={() => selectTheme("matcha")}
+            >
+                <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                >
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M12 1v6m0 6v10M1 12h6m6 0h10"></path>
+                    <circle cx="12" cy="12" r="8" stroke-dasharray="2 4"></circle>
+                </svg>
+                <span>Matcha</span>
             </button>
         </div>
     {/if}

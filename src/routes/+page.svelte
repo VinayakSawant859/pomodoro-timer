@@ -168,7 +168,7 @@
         --success-color: #c3829e;
         --warning-color: #e9b1cd;
         --error-color: #562135;
-        
+
         --background-color: #ffe7de;
         --surface-color: #fcd1d7;
         --text-color: #562135;
@@ -185,13 +185,30 @@
         --success-color: #b0a089;
         --warning-color: #cdc0a9;
         --error-color: #5c4b3c;
-        
+
         --background-color: #f4f0e5;
         --surface-color: #cdc0a9;
         --text-color: #1d1610;
         --text-secondary: #5c4b3c;
         --border-color: #b0a089;
         --shadow: rgba(29, 22, 16, 0.15);
+    }
+
+    :global([data-theme="matcha"]) {
+        /* Matcha Green Theme */
+        --primary-color: #678e7a;
+        --primary-light: #9abea5;
+        --primary-dark: #285548;
+        --success-color: #9abea5;
+        --warning-color: #678e7a;
+        --error-color: #285548;
+
+        --background-color: #dbeedd;
+        --surface-color: #9abea5;
+        --text-color: #11322c;
+        --text-secondary: #285548;
+        --border-color: #678e7a;
+        --shadow: rgba(17, 50, 44, 0.15);
     }
 
     :global(*) {
