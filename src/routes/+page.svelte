@@ -177,6 +177,23 @@
         --shadow: rgba(86, 33, 53, 0.15);
     }
 
+    :global([data-theme="tobacco"]) {
+        /* Tobacco Warm Theme */
+        --primary-color: #b0a089;
+        --primary-light: #cdc0a9;
+        --primary-dark: #5c4b3c;
+        --success-color: #b0a089;
+        --warning-color: #cdc0a9;
+        --error-color: #5c4b3c;
+        
+        --background-color: #f4f0e5;
+        --surface-color: #cdc0a9;
+        --text-color: #1d1610;
+        --text-secondary: #5c4b3c;
+        --border-color: #b0a089;
+        --shadow: rgba(29, 22, 16, 0.15);
+    }
+
     :global(*) {
         margin: 0;
         padding: 0;

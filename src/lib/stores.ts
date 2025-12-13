@@ -407,20 +407,20 @@ const createTaskStore = () => {
 
 // Theme Store
 const createThemeStore = () => {
-    const { subscribe, set, update } = writable<'light' | 'dark' | 'sakura'>('light');
+    const { subscribe, set, update } = writable<'light' | 'dark' | 'sakura' | 'tobacco'>('light');
 
     return {
         subscribe,
         toggle: () => update(theme => {
-            // Cycle through: light -> dark -> sakura -> light
-            const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'sakura' : 'light';
+            // Cycle through: light -> dark -> sakura -> tobacco -> light
+            const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'sakura' : theme === 'sakura' ? 'tobacco' : 'light';
             if (typeof window !== 'undefined') {
                 localStorage.setItem('theme', newTheme);
                 document.documentElement.setAttribute('data-theme', newTheme);
             }
             return newTheme;
         }),
-        set: (theme: 'light' | 'dark' | 'sakura') => {
+        set: (theme: 'light' | 'dark' | 'sakura' | 'tobacco') => {
             set(theme);
             if (typeof window !== 'undefined') {
                 localStorage.setItem('theme', theme);
@@ -429,7 +429,7 @@ const createThemeStore = () => {
         },
         init: () => {
             if (typeof window !== 'undefined') {
-                const stored = localStorage.getItem('theme') as 'light' | 'dark' | 'sakura' | null;
+                const stored = localStorage.getItem('theme') as 'light' | 'dark' | 'sakura' | 'tobacco' | null;
                 const theme = stored || 'light';
                 set(theme);
                 document.documentElement.setAttribute('data-theme', theme);

@@ -18,7 +18,7 @@
         showDropdown = false;
     }
 
-    function selectTheme(theme: 'light' | 'dark' | 'sakura') {
+    function selectTheme(theme: 'light' | 'dark' | 'sakura' | 'tobacco') {
         themeStore.set(theme);
         showDropdown = false;
         if (hoverTimeout) {
@@ -52,11 +52,17 @@
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
             </svg>
-        {:else}
+        {:else if $themeStore === "sakura"}
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M12 2C12 2 10.5 3.5 10.5 6.5C10.5 9.5 12 11 12 11C12 11 13.5 9.5 13.5 6.5C13.5 3.5 12 2 12 2Z"></path>
                 <path d="M12 13C12 13 10.5 14.5 10.5 17.5C10.5 20.5 12 22 12 22C12 22 13.5 20.5 13.5 17.5C13.5 14.5 12 13 12 13Z"></path>
                 <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+        {:else}
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+                <path d="M9 6V4C9 3.4 9.4 3 10 3H14C14.6 3 15 3.4 15 4V6"></path>
+                <path d="M9 18V20C9 20.6 9.4 21 10 21H14C14.6 21 15 20.6 15 20V18"></path>
             </svg>
         {/if}
     </button>
@@ -102,6 +108,18 @@
                     <circle cx="12" cy="12" r="2"></circle>
                 </svg>
                 <span>Sakura</span>
+            </button>
+            <button 
+                class="theme-option" 
+                class:active={$themeStore === "tobacco"}
+                onclick={() => selectTheme("tobacco")}
+            >
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+                    <path d="M9 6V4C9 3.4 9.4 3 10 3H14C14.6 3 15 3.4 15 4V6"></path>
+                    <path d="M9 18V20C9 20.6 9.4 21 10 21H14C14.6 21 15 20.6 15 20V18"></path>
+                </svg>
+                <span>Tobacco</span>
             </button>
         </div>
     {/if}
