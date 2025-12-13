@@ -125,29 +125,34 @@
 
 <style>
     :global(:root) {
-        --primary-color: #6366f1;
-        --primary-light: #818cf8;
-        --primary-dark: #4f46e5;
+        --primary-color: #6C7CFF;
+        --primary-light: #8B98FF;
+        --primary-dark: #5565E8;
         --success-color: #10b981;
         --warning-color: #f59e0b;
         --error-color: #ef4444;
 
-        /* Light theme */
-        --background-color: #ffffff;
-        --surface-color: rgba(248, 250, 252, 0.8);
-        --text-color: #1f2937;
-        --text-secondary: #6b7280;
-        --border-color: #e5e7eb;
-        --shadow: rgba(0, 0, 0, 0.1);
+        /* Light theme - Modern & Premium */
+        --background-color: #F6F7FB;
+        --surface-color: #FFFFFF;
+        --text-color: #1E2433;
+        --text-secondary: #5F677A;
+        --border-color: #E3E6EF;
+        --shadow: rgba(30, 36, 51, 0.08);
     }
 
     :global([data-theme="dark"]) {
-        --background-color: #1f2937;
-        --surface-color: rgba(55, 65, 81, 0.7);
-        --text-color: #f9fafb;
-        --text-secondary: #d1d5db;
-        --border-color: #4b5563;
-        --shadow: rgba(0, 0, 0, 0.3);
+        /* Dark theme - Modern & Premium */
+        --primary-color: #6C7CFF;
+        --primary-light: #8B98FF;
+        --primary-dark: #5565E8;
+
+        --background-color: #0E1320;
+        --surface-color: #1A2133;
+        --text-color: #E6E9F2;
+        --text-secondary: #A8B0C3;
+        --border-color: #2A3347;
+        --shadow: rgba(0, 0, 0, 0.4);
     }
 
     :global([data-theme="academia"]) {
