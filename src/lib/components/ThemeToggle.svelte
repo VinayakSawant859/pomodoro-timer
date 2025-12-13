@@ -8,7 +8,7 @@
 
     $effect(() => {
         const unsubscribe = dropdownStore.subscribe((activeDropdown) => {
-            if (activeDropdown !== 'theme') {
+            if (activeDropdown !== "theme") {
                 showDropdown = false;
                 if (hoverTimeout) {
                     clearTimeout(hoverTimeout);
@@ -22,7 +22,7 @@
     function handleMouseEnter() {
         hoverTimeout = window.setTimeout(() => {
             showDropdown = true;
-            dropdownStore.open('theme');
+            dropdownStore.open("theme");
         }, 2000);
     }
 
@@ -38,20 +38,36 @@
     function handleToggle() {
         themeStore.toggle();
         // Get the current theme value to show in toast
-        let currentTheme = '';
-        const unsubscribe = themeStore.subscribe(theme => {
+        let currentTheme = "";
+        const unsubscribe = themeStore.subscribe((theme) => {
             currentTheme = theme;
         });
         unsubscribe();
-        const themeName = currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1);
+        const themeNames: Record<string, string> = {
+            light: "Light",
+            dark: "Dark",
+            academia: "Dark Academia",
+            sakura: "Sakura",
+            tobacco: "Tobacco",
+            matcha: "Matcha",
+        };
+        const themeName = themeNames[currentTheme] || currentTheme;
         toastStore.show(`Theme changed to ${themeName}`, "success");
     }
 
     function selectTheme(
-        theme: "light" | "dark" | "sakura" | "tobacco" | "matcha",
+        theme: "light" | "dark" | "academia" | "sakura" | "tobacco" | "matcha",
     ) {
         themeStore.set(theme);
-        const themeName = theme.charAt(0).toUpperCase() + theme.slice(1);
+        const themeNames: Record<string, string> = {
+            light: "Light",
+            dark: "Dark",
+            academia: "Dark Academia",
+            sakura: "Sakura",
+            tobacco: "Tobacco",
+            matcha: "Matcha",
+        };
+        const themeName = themeNames[theme] || theme;
         toastStore.show(`Theme changed to ${themeName}`, "success");
         showDropdown = false;
         dropdownStore.close();
@@ -69,11 +85,7 @@
     onmouseenter={handleMouseEnter}
     onmouseleave={handleMouseLeave}
 >
-    <button
-        class="theme-toggle"
-        onclick={handleToggle}
-        title="Toggle theme"
-    >
+    <button class="theme-toggle" onclick={handleToggle} title="Toggle theme">
         {#if $themeStore === "light"}
             <svg
                 class="icon"
@@ -100,6 +112,18 @@
             >
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
                 ></path>
+            </svg>
+        {:else if $themeStore === "academia"}
+            <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+            >
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                <path d="M12 6v8"></path>
+                <path d="M9 9h6"></path>
             </svg>
         {:else if $themeStore === "sakura"}
             <svg
@@ -184,6 +208,24 @@
                     ></path>
                 </svg>
                 <span>Dark</span>
+            </button>
+            <button
+                class="theme-option"
+                class:active={$themeStore === "academia"}
+                onclick={() => selectTheme("academia")}
+            >
+                <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                >
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    <path d="M12 6v8"></path>
+                    <path d="M9 9h6"></path>
+                </svg>
+                <span>Academia</span>
             </button>
             <button
                 class="theme-option"

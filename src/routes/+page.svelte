@@ -150,6 +150,23 @@
         --shadow: rgba(0, 0, 0, 0.3);
     }
 
+    :global([data-theme="academia"]) {
+        /* Dark Academia Theme */
+        --primary-color: #3A4F7A;
+        --primary-light: #5C7AA8;
+        --primary-dark: #2A3857;
+        --success-color: #C9A24D;
+        --warning-color: #5C3D2E;
+        --error-color: #8B4513;
+
+        --background-color: #1E1B18;
+        --surface-color: #2A2621;
+        --text-color: #EDE6D8;
+        --text-secondary: #B6B0A4;
+        --border-color: #5C3D2E;
+        --shadow: rgba(0, 0, 0, 0.5);
+    }
+
     :global([data-theme="sakura"]) {
         /* Sakura Aesthetic Theme */
         --primary-color: #c3829e;

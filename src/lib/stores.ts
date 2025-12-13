@@ -407,20 +407,20 @@ const createTaskStore = () => {
 
 // Theme Store
 const createThemeStore = () => {
-    const { subscribe, set, update } = writable<'light' | 'dark' | 'sakura' | 'tobacco' | 'matcha'>('light');
+    const { subscribe, set, update } = writable<'light' | 'dark' | 'academia' | 'sakura' | 'tobacco' | 'matcha'>('light');
 
     return {
         subscribe,
         toggle: () => update(theme => {
-            // Cycle through: light -> dark -> sakura -> tobacco -> matcha -> light
-            const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'sakura' : theme === 'sakura' ? 'tobacco' : theme === 'tobacco' ? 'matcha' : 'light';
+            // Cycle through: light -> dark -> academia -> sakura -> tobacco -> matcha -> light
+            const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'academia' : theme === 'academia' ? 'sakura' : theme === 'sakura' ? 'tobacco' : theme === 'tobacco' ? 'matcha' : 'light';
             if (typeof window !== 'undefined') {
                 localStorage.setItem('theme', newTheme);
                 document.documentElement.setAttribute('data-theme', newTheme);
             }
             return newTheme;
         }),
-        set: (theme: 'light' | 'dark' | 'sakura' | 'tobacco' | 'matcha') => {
+        set: (theme: 'light' | 'dark' | 'academia' | 'sakura' | 'tobacco' | 'matcha') => {
             set(theme);
             if (typeof window !== 'undefined') {
                 localStorage.setItem('theme', theme);
@@ -429,7 +429,7 @@ const createThemeStore = () => {
         },
         init: () => {
             if (typeof window !== 'undefined') {
-                const stored = localStorage.getItem('theme') as 'light' | 'dark' | 'sakura' | 'tobacco' | 'matcha' | null;
+                const stored = localStorage.getItem('theme') as 'light' | 'dark' | 'academia' | 'sakura' | 'tobacco' | 'matcha' | null;
                 const theme = stored || 'light';
                 set(theme);
                 document.documentElement.setAttribute('data-theme', theme);
@@ -446,11 +446,11 @@ const createFontStore = () => {
         subscribe,
         toggle: () => update(font => {
             // Cycle through: default -> josefin -> cause -> cabin -> inconsolata -> poppins -> default
-            const newFont = font === 'default' ? 'josefin' : 
-                           font === 'josefin' ? 'cause' : 
-                           font === 'cause' ? 'cabin' : 
-                           font === 'cabin' ? 'inconsolata' : 
-                           font === 'inconsolata' ? 'poppins' : 'default';
+            const newFont = font === 'default' ? 'josefin' :
+                font === 'josefin' ? 'cause' :
+                    font === 'cause' ? 'cabin' :
+                        font === 'cabin' ? 'inconsolata' :
+                            font === 'inconsolata' ? 'poppins' : 'default';
             if (typeof window !== 'undefined') {
                 localStorage.setItem('font', newFont);
                 document.documentElement.setAttribute('data-font', newFont);

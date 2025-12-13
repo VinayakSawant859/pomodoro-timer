@@ -8,7 +8,7 @@
 
     $effect(() => {
         const unsubscribe = dropdownStore.subscribe((activeDropdown) => {
-            if (activeDropdown !== 'font') {
+            if (activeDropdown !== "font") {
                 showDropdown = false;
                 if (hoverTimeout) {
                     clearTimeout(hoverTimeout);
@@ -22,7 +22,7 @@
     function handleMouseEnter() {
         hoverTimeout = window.setTimeout(() => {
             showDropdown = true;
-            dropdownStore.open('font');
+            dropdownStore.open("font");
         }, 2000);
     }
 
@@ -41,21 +41,29 @@
         cause: "Cause",
         cabin: "Cabin Sketch",
         inconsolata: "Inconsolata",
-        poppins: "Poppins"
+        poppins: "Poppins",
     };
 
     function handleToggle() {
         fontStore.toggle();
         // Get the current font value to show in toast
-        let currentFont = '';
-        const unsubscribe = fontStore.subscribe(font => {
+        let currentFont = "";
+        const unsubscribe = fontStore.subscribe((font) => {
             currentFont = font;
         });
         unsubscribe();
         toastStore.show(`Font changed to ${fontNames[currentFont]}`, "success");
     }
 
-    function selectFont(font: "default" | "josefin" | "cause" | "cabin" | "inconsolata" | "poppins") {
+    function selectFont(
+        font:
+            | "default"
+            | "josefin"
+            | "cause"
+            | "cabin"
+            | "inconsolata"
+            | "poppins",
+    ) {
         fontStore.set(font);
         toastStore.show(`Font changed to ${fontNames[font]}`, "success");
         showDropdown = false;
@@ -74,17 +82,8 @@
     onmouseenter={handleMouseEnter}
     onmouseleave={handleMouseLeave}
 >
-    <button
-        class="font-toggle"
-        onclick={handleToggle}
-        title="Toggle font"
-    >
-        <svg
-            class="icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-        >
+    <button class="font-toggle" onclick={handleToggle} title="Toggle font">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M4 7V4h16v3"></path>
             <path d="M9 20h6"></path>
             <path d="M12 4v16"></path>
@@ -98,14 +97,19 @@
                 class:active={$fontStore === "default"}
                 onclick={() => selectFont("default")}
             >
-                <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Default</span>
+                <span
+                    style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;"
+                    >Default</span
+                >
             </button>
             <button
                 class="font-option"
                 class:active={$fontStore === "josefin"}
                 onclick={() => selectFont("josefin")}
             >
-                <span style="font-family: 'Josefin Sans', sans-serif;">Josefin Sans</span>
+                <span style="font-family: 'Josefin Sans', sans-serif;"
+                    >Josefin Sans</span
+                >
             </button>
             <button
                 class="font-option"
@@ -119,14 +123,18 @@
                 class:active={$fontStore === "cabin"}
                 onclick={() => selectFont("cabin")}
             >
-                <span style="font-family: 'Cabin Sketch', sans-serif;">Cabin Sketch</span>
+                <span style="font-family: 'Cabin Sketch', sans-serif;"
+                    >Cabin Sketch</span
+                >
             </button>
             <button
                 class="font-option"
                 class:active={$fontStore === "inconsolata"}
                 onclick={() => selectFont("inconsolata")}
             >
-                <span style="font-family: 'Inconsolata', monospace;">Inconsolata</span>
+                <span style="font-family: 'Inconsolata', monospace;"
+                    >Inconsolata</span
+                >
             </button>
             <button
                 class="font-option"
