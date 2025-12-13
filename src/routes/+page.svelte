@@ -160,6 +160,23 @@
         --shadow: rgba(0, 0, 0, 0.3);
     }
 
+    :global([data-theme="sakura"]) {
+        /* Sakura Aesthetic Theme */
+        --primary-color: #c3829e;
+        --primary-light: #e9b1cd;
+        --primary-dark: #562135;
+        --success-color: #c3829e;
+        --warning-color: #e9b1cd;
+        --error-color: #562135;
+        
+        --background-color: #ffe7de;
+        --surface-color: #fcd1d7;
+        --text-color: #562135;
+        --text-secondary: #c3829e;
+        --border-color: #e9b1cd;
+        --shadow: rgba(86, 33, 53, 0.15);
+    }
+
     :global(*) {
         margin: 0;
         padding: 0;
