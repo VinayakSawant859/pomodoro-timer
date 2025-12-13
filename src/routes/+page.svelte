@@ -13,6 +13,7 @@
     import ThemeToggle from "$lib/components/ThemeToggle.svelte";
     import FontToggle from "$lib/components/FontToggle.svelte";
     import Statistics from "$lib/components/Statistics.svelte";
+    import Toast from "$lib/components/Toast.svelte";
 
     let showTasks = $state(false);
     let showStatistics = $state(false);
@@ -118,6 +119,8 @@
     {#if showStatistics}
         <Statistics onClose={() => (showStatistics = false)} />
     {/if}
+
+    <Toast />
 </main>
 
 <style>

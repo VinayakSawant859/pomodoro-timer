@@ -1,5 +1,6 @@
 <script lang="ts">
     import { themeStore } from "$lib/stores";
+    import { toastStore } from "$lib/stores/toastStore";
 
     let showDropdown = $state(false);
     let hoverTimeout: number | null = null;
@@ -22,6 +23,8 @@
         theme: "light" | "dark" | "sakura" | "tobacco" | "matcha",
     ) {
         themeStore.set(theme);
+        const themeName = theme.charAt(0).toUpperCase() + theme.slice(1);
+        toastStore.show(`Theme changed to ${themeName}`, "success");
         showDropdown = false;
         if (hoverTimeout) {
             clearTimeout(hoverTimeout);

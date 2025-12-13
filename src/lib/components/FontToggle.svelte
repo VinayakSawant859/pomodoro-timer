@@ -1,5 +1,6 @@
 <script lang="ts">
     import { fontStore } from "$lib/stores";
+    import { toastStore } from "$lib/stores/toastStore";
 
     let showDropdown = $state(false);
     let hoverTimeout: number | null = null;
@@ -20,6 +21,15 @@
 
     function selectFont(font: "default" | "josefin" | "cause" | "cabin" | "inconsolata" | "poppins") {
         fontStore.set(font);
+        const fontNames: Record<string, string> = {
+            default: "Default",
+            josefin: "Josefin Sans",
+            cause: "Cause",
+            cabin: "Cabin Sketch",
+            inconsolata: "Inconsolata",
+            poppins: "Poppins"
+        };
+        toastStore.show(`Font changed to ${fontNames[font]}`, "success");
         showDropdown = false;
         if (hoverTimeout) {
             clearTimeout(hoverTimeout);
