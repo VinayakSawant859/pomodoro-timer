@@ -49,14 +49,15 @@
             academia: "Dark Academia",
             sakura: "Sakura",
             tobacco: "Tobacco",
-            forest: "Forest Zen",
+            forest: "Forest",
+            pastel: "Pastel",
         };
         const themeName = themeNames[currentTheme] || currentTheme;
         toastStore.show(`Theme changed to ${themeName}`, "success");
     }
 
     function selectTheme(
-        theme: "light" | "dark" | "academia" | "sakura" | "tobacco" | "forest",
+        theme: "light" | "dark" | "academia" | "sakura" | "tobacco" | "forest" | "pastel",
     ) {
         themeStore.set(theme);
         const themeNames: Record<string, string> = {
@@ -65,7 +66,8 @@
             academia: "Dark Academia",
             sakura: "Sakura",
             tobacco: "Tobacco",
-            forest: "Forest Zen",
+            forest: "Forest",
+            pastel: "Pastel",
         };
         const themeName = themeNames[theme] || theme;
         toastStore.show(`Theme changed to ${themeName}`, "success");
@@ -154,7 +156,7 @@
                     d="M9 18V20C9 20.6 9.4 21 10 21H14C14.6 21 15 20.6 15 20V18"
                 ></path>
             </svg>
-        {:else}
+        {:else if $themeStore === "forest"}
             <svg
                 class="icon"
                 viewBox="0 0 24 24"
@@ -164,6 +166,17 @@
                 <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
                 <path d="M2 17l10 5 10-5"></path>
                 <path d="M2 12l10 5 10-5"></path>
+            </svg>
+        {:else}
+            <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+            >
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v4m0 12v4M2 12h4m12 0h4"></path>
+                <path d="M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path>
             </svg>
         {/if}
     </button>
@@ -283,7 +296,24 @@
                     <path d="M2 17l10 5 10-5"></path>
                     <path d="M2 12l10 5 10-5"></path>
                 </svg>
-                <span>Forest Zen</span>
+                <span>Forest</span>
+            </button>
+            <button
+                class="theme-option"
+                class:active={$themeStore === "pastel"}
+                onclick={() => selectTheme("pastel")}
+            >
+                <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                >
+                    <circle cx="12" cy="12" r="4"></circle>
+                    <path d="M12 2v4m0 12v4M2 12h4m12 0h4"></path>
+                    <path d="M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path>
+                </svg>
+                <span>Pastel</span>
             </button>
         </div>
     {/if}

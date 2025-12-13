@@ -216,7 +216,7 @@
     }
 
     :global([data-theme="forest"]) {
-        /* Forest Zen Theme - Natural & Grounded */
+        /* Forest Theme - Natural & Grounded */
         /* Semantic Roles:
            - primary: Forest green for timer, buttons, progress
            - background: Natural off-white
@@ -238,6 +238,31 @@
         --text-secondary: #6B7F6A;
         --border-color: rgba(95, 141, 78, 0.25);
         --shadow: rgba(47, 62, 46, 0.08);
+    }
+
+    :global([data-theme="pastel"]) {
+        /* Pastel Productivity Theme - Modern & Friendly */
+        /* Semantic Roles:
+           - primary: Lavender blue for timer, buttons, progress
+           - background: Clean white
+           - surface: Soft purple for cards
+           - text-primary: Dark charcoal for readability
+           - text-secondary: Medium gray for hierarchy
+           - accent: Pastel pink highlights
+        */
+        --primary-color: #B8C0FF;
+        --primary-light: #C8CEFF;
+        --primary-dark: #9BA5E8;
+        --success-color: #B8C0FF;
+        --warning-color: #FFD6E0;
+        --error-color: #CDB4DB;
+
+        --background-color: #FAFAFA;
+        --surface-color: rgba(205, 180, 219, 0.15);
+        --text-color: #2B2B2B;
+        --text-secondary: #7A7A7A;
+        --border-color: rgba(184, 192, 255, 0.3);
+        --shadow: rgba(43, 43, 43, 0.06);
     }
 
     :global(*) {

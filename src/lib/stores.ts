@@ -407,20 +407,20 @@ const createTaskStore = () => {
 
 // Theme Store
 const createThemeStore = () => {
-    const { subscribe, set, update } = writable<'light' | 'dark' | 'academia' | 'sakura' | 'tobacco' | 'forest'>('light');
+    const { subscribe, set, update } = writable<'light' | 'dark' | 'academia' | 'sakura' | 'tobacco' | 'forest' | 'pastel'>('light');
 
     return {
         subscribe,
         toggle: () => update(theme => {
-            // Cycle through: light -> dark -> academia -> sakura -> tobacco -> forest -> light
-            const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'academia' : theme === 'academia' ? 'sakura' : theme === 'sakura' ? 'tobacco' : theme === 'tobacco' ? 'forest' : 'light';
+            // Cycle through: light -> dark -> academia -> sakura -> tobacco -> forest -> pastel -> light
+            const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'academia' : theme === 'academia' ? 'sakura' : theme === 'sakura' ? 'tobacco' : theme === 'tobacco' ? 'forest' : theme === 'forest' ? 'pastel' : 'light';
             if (typeof window !== 'undefined') {
                 localStorage.setItem('theme', newTheme);
                 document.documentElement.setAttribute('data-theme', newTheme);
             }
             return newTheme;
         }),
-        set: (theme: 'light' | 'dark' | 'academia' | 'sakura' | 'tobacco' | 'forest') => {
+        set: (theme: 'light' | 'dark' | 'academia' | 'sakura' | 'tobacco' | 'forest' | 'pastel') => {
             set(theme);
             if (typeof window !== 'undefined') {
                 localStorage.setItem('theme', theme);
@@ -429,7 +429,7 @@ const createThemeStore = () => {
         },
         init: () => {
             if (typeof window !== 'undefined') {
-                const stored = localStorage.getItem('theme') as 'light' | 'dark' | 'academia' | 'sakura' | 'tobacco' | 'forest' | null;
+                const stored = localStorage.getItem('theme') as 'light' | 'dark' | 'academia' | 'sakura' | 'tobacco' | 'forest' | 'pastel' | null;
                 const theme = stored || 'light';
                 set(theme);
                 document.documentElement.setAttribute('data-theme', theme);
