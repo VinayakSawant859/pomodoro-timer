@@ -48,9 +48,10 @@
             dark: "Dark",
             academia: "Dark Academia",
             sakura: "Sakura",
-            tobacco: "Tobacco",
+            coffee: "Coffee",
             forest: "Forest",
-            pastel: "Pastel",
+            flame: "Flame",
+            anime: "Anime",
         };
         const themeName = themeNames[currentTheme] || currentTheme;
         toastStore.show(`Theme changed to ${themeName}`, "success");
@@ -65,9 +66,10 @@
             dark: "Dark",
             academia: "Dark Academia",
             sakura: "Sakura",
-            tobacco: "Tobacco",
+            coffee: "Coffee",
             forest: "Forest",
-            pastel: "Pastel",
+            flame: "Flame",
+            anime: "Anime",
         };
         const themeName = themeNames[theme] || theme;
         toastStore.show(`Theme changed to ${themeName}`, "success");
@@ -285,7 +287,7 @@
                     <line x1="10" y1="2" x2="10" y2="4"></line>
                     <line x1="14" y1="2" x2="14" y2="4"></line>
                 </svg>
-                <span>Warm Coffee</span>
+                <span>Coffee</span>
             </button>
             <button
                 class="theme-option"

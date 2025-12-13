@@ -197,7 +197,7 @@
     }
 
     :global([data-theme="coffee"]) {
-        /* Warm Coffee Theme - Cozy & Aesthetic */
+        /* Coffee Theme - Cozy & Aesthetic */
         /* Semantic Roles:
            - primary: Coffee brown for timer, buttons, progress
            - background: Warm cream
@@ -222,28 +222,29 @@
     }
 
     :global([data-theme="forest"]) {
-        /* Forest Theme - Natural & Grounded */
+        /* Forest Theme - Deep Forest Aesthetic */
         /* Semantic Roles:
-           - primary: Forest green for timer, buttons, progress
-           - background: Natural off-white
-           - surface: Soft sage for cards
-           - text-primary: Deep forest for readability
-           - text-secondary: Muted sage for hierarchy
-           - accent: Sand tone for highlights
+           - primary: Fresh mint accent for timer, buttons (≤10% usage)
+           - background: Deep forest base for immersive depth
+           - surface: Sage green cards for natural elevation
+           - secondary-surface: Muted sage for subtle layering
+           - text-primary: Soft off-white for readability on dark
+           - text-secondary: Muted sage-gray for hierarchy
+           - text-on-light: Dark forest for light surface text
         */
-        --primary-color: #5F8D4E;
-        --primary-light: #7AA55F;
-        --primary-dark: #4A6E3D;
-        --success-color: #5F8D4E;
-        --warning-color: #A4BE7B;
-        --error-color: #4A6E3D;
+        --primary-color: #2ED573;
+        --primary-light: #3FE38A;
+        --primary-dark: #25B85F;
+        --success-color: #2ED573;
+        --warning-color: #6F8F6A;
+        --error-color: #1E2A1E;
 
-        --background-color: #F3F7F4;
-        --surface-color: rgba(229, 217, 182, 0.5);
-        --text-color: #2F3E2E;
-        --text-secondary: #6B7F6A;
-        --border-color: rgba(95, 141, 78, 0.25);
-        --shadow: rgba(47, 62, 46, 0.08);
+        --background-color: #1F331A;
+        --surface-color: #2B4220;
+        --text-color: #ECF5EE;
+        --text-secondary: #C7D8C9;
+        --border-color: #3D5935;
+        --shadow: rgba(15, 25, 13, 0.5);
     }
 
     :global([data-theme="flame"]) {
