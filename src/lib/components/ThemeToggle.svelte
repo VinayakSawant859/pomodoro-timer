@@ -18,7 +18,9 @@
         showDropdown = false;
     }
 
-    function selectTheme(theme: "light" | "dark" | "sakura" | "tobacco" | "matcha") {
+    function selectTheme(
+        theme: "light" | "dark" | "sakura" | "tobacco" | "matcha",
+    ) {
         themeStore.set(theme);
         showDropdown = false;
         if (hoverTimeout) {
@@ -205,7 +207,8 @@
                 >
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M12 1v6m0 6v10M1 12h6m6 0h10"></path>
-                    <circle cx="12" cy="12" r="8" stroke-dasharray="2 4"></circle>
+                    <circle cx="12" cy="12" r="8" stroke-dasharray="2 4"
+                    ></circle>
                 </svg>
                 <span>Matcha</span>
             </button>
