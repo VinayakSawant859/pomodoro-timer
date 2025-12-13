@@ -349,6 +349,15 @@
         transform: rotateY(180deg);
     }
 
+    /* Prevent interaction with hidden sides */
+    .flip-card:not(.flipped) .flip-card-back {
+        pointer-events: none;
+    }
+
+    .flip-card.flipped .flip-card-front {
+        pointer-events: none;
+    }
+
     @media (max-width: 768px) {
         .main-content {
             gap: 1.5rem;
