@@ -407,20 +407,20 @@ const createTaskStore = () => {
 
 // Theme Store
 const createThemeStore = () => {
-    const { subscribe, set, update } = writable<'light' | 'dark' | 'academia' | 'sakura' | 'coffee' | 'forest' | 'minimal'>('light');
+    const { subscribe, set, update } = writable<'light' | 'dark' | 'academia' | 'sakura' | 'coffee' | 'forest' | 'minimal' | 'anime'>('light');
 
     return {
         subscribe,
         toggle: () => update(theme => {
-            // Cycle through: light -> dark -> academia -> sakura -> coffee -> forest -> minimal -> light
-            const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'academia' : theme === 'academia' ? 'sakura' : theme === 'sakura' ? 'coffee' : theme === 'coffee' ? 'forest' : theme === 'forest' ? 'minimal' : 'light';
+            // Cycle through: light -> dark -> academia -> sakura -> coffee -> forest -> minimal -> anime -> light
+            const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'academia' : theme === 'academia' ? 'sakura' : theme === 'sakura' ? 'coffee' : theme === 'coffee' ? 'forest' : theme === 'forest' ? 'minimal' : theme === 'minimal' ? 'anime' : 'light';
             if (typeof window !== 'undefined') {
                 localStorage.setItem('theme', newTheme);
                 document.documentElement.setAttribute('data-theme', newTheme);
             }
             return newTheme;
         }),
-        set: (theme: 'light' | 'dark' | 'academia' | 'sakura' | 'coffee' | 'forest' | 'minimal') => {
+        set: (theme: 'light' | 'dark' | 'academia' | 'sakura' | 'coffee' | 'forest' | 'minimal' | 'anime') => {
             set(theme);
             if (typeof window !== 'undefined') {
                 localStorage.setItem('theme', theme);
@@ -429,7 +429,7 @@ const createThemeStore = () => {
         },
         init: () => {
             if (typeof window !== 'undefined') {
-                const stored = localStorage.getItem('theme') as 'light' | 'dark' | 'academia' | 'sakura' | 'coffee' | 'forest' | 'minimal' | null;
+                const stored = localStorage.getItem('theme') as 'light' | 'dark' | 'academia' | 'sakura' | 'coffee' | 'forest' | 'minimal' | 'anime' | null;
                 const theme = stored || 'light';
                 set(theme);
                 document.documentElement.setAttribute('data-theme', theme);

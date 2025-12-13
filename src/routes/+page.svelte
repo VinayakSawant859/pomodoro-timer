@@ -266,6 +266,32 @@
         --shadow: rgba(46, 52, 64, 0.06);
     }
 
+    :global([data-theme="anime"]) {
+        /* Anime Theme - Dark Purple with Neon Accents */
+        /* Semantic Roles:
+           - primary: Purple for timer, buttons, progress with glow
+           - background: Deep purple-black for night aesthetic
+           - surface: Dark purple for cards with transparency
+           - text-primary: Light lavender for excellent readability
+           - text-secondary: Muted purple for hierarchy
+           - neon-accent: Bright purple glow for highlights
+           - cyan-accent: Subtle cyan for special emphasis (minimal use)
+        */
+        --primary-color: #7C5CFF;
+        --primary-light: #9B7FFF;
+        --primary-dark: #6344E6;
+        --success-color: #7C5CFF;
+        --warning-color: #B46CFF;
+        --error-color: #FF6B9D;
+
+        --background-color: #0B0A12;
+        --surface-color: rgba(22, 20, 39, 0.6);
+        --text-color: #EAE7FF;
+        --text-secondary: #A39FCB;
+        --border-color: rgba(124, 92, 255, 0.2);
+        --shadow: rgba(124, 92, 255, 0.15);
+    }
+
     :global(*) {
         margin: 0;
         padding: 0;
