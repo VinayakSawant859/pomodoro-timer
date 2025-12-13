@@ -168,54 +168,75 @@
     }
 
     :global([data-theme="sakura"]) {
-        /* Sakura Aesthetic Theme */
+        /* Sakura Aesthetic Theme - Polished */
+        /* Semantic Roles:
+           - primary: Soft pink for timer, buttons, progress
+           - background: Warm peachy white
+           - surface: Subtle blush for cards
+           - text-primary: Deep wine for readability
+           - text-secondary: Muted rose for hierarchy
+        */
         --primary-color: #c3829e;
-        --primary-light: #e9b1cd;
-        --primary-dark: #562135;
+        --primary-light: #d69bb3;
+        --primary-dark: #a06781;
         --success-color: #c3829e;
-        --warning-color: #e9b1cd;
-        --error-color: #562135;
+        --warning-color: #d69bb3;
+        --error-color: #8b4862;
 
-        --background-color: #ffe7de;
-        --surface-color: #fcd1d7;
-        --text-color: #562135;
-        --text-secondary: #c3829e;
-        --border-color: #e9b1cd;
-        --shadow: rgba(86, 33, 53, 0.15);
+        --background-color: #fff5f2;
+        --surface-color: #ffe9e6;
+        --text-color: #4a1f2f;
+        --text-secondary: #7a5563;
+        --border-color: rgba(195, 130, 158, 0.25);
+        --shadow: rgba(74, 31, 47, 0.08);
     }
 
     :global([data-theme="tobacco"]) {
-        /* Tobacco Warm Theme */
-        --primary-color: #b0a089;
-        --primary-light: #cdc0a9;
-        --primary-dark: #5c4b3c;
-        --success-color: #b0a089;
-        --warning-color: #cdc0a9;
-        --error-color: #5c4b3c;
+        /* Tobacco Warm Theme - Polished */
+        /* Semantic Roles:
+           - primary: Warm taupe for timer, buttons, progress
+           - background: Soft cream
+           - surface: Gentle sand for cards
+           - text-primary: Deep espresso for readability
+           - text-secondary: Medium brown for hierarchy
+        */
+        --primary-color: #9d8b70;
+        --primary-light: #b5a38a;
+        --primary-dark: #6d5d49;
+        --success-color: #9d8b70;
+        --warning-color: #b5a38a;
+        --error-color: #5c4430;
 
-        --background-color: #f4f0e5;
-        --surface-color: #cdc0a9;
-        --text-color: #1d1610;
-        --text-secondary: #5c4b3c;
-        --border-color: #b0a089;
-        --shadow: rgba(29, 22, 16, 0.15);
+        --background-color: #faf7f2;
+        --surface-color: #f0ebe3;
+        --text-color: #2a2218;
+        --text-secondary: #594c3d;
+        --border-color: rgba(157, 139, 112, 0.25);
+        --shadow: rgba(42, 34, 24, 0.08);
     }
 
     :global([data-theme="matcha"]) {
-        /* Matcha Green Theme */
-        --primary-color: #678e7a;
-        --primary-light: #9abea5;
-        --primary-dark: #285548;
-        --success-color: #9abea5;
-        --warning-color: #678e7a;
-        --error-color: #285548;
+        /* Matcha Green Theme - Polished */
+        /* Semantic Roles:
+           - primary: Soft sage for timer, buttons, progress
+           - background: Pale mint
+           - surface: Gentle celadon for cards
+           - text-primary: Deep forest for readability
+           - text-secondary: Medium evergreen for hierarchy
+        */
+        --primary-color: #6b8c78;
+        --primary-light: #8aa797;
+        --primary-dark: #4d6b5a;
+        --success-color: #6b8c78;
+        --warning-color: #8aa797;
+        --error-color: #3d5248;
 
-        --background-color: #dbeedd;
-        --surface-color: #9abea5;
-        --text-color: #11322c;
-        --text-secondary: #285548;
-        --border-color: #678e7a;
-        --shadow: rgba(17, 50, 44, 0.15);
+        --background-color: #f5faf7;
+        --surface-color: #e8f3ed;
+        --text-color: #1f3329;
+        --text-secondary: #4a5f52;
+        --border-color: rgba(107, 140, 120, 0.25);
+        --shadow: rgba(31, 51, 41, 0.08);
     }
 
     :global(*) {
