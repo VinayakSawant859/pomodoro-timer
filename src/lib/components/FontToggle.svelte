@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { fontStore } from "$lib/stores";
+    import { font } from "$lib/state.svelte";
     import { toastStore } from "$lib/stores/toastStore";
     import { dropdownStore } from "$lib/stores/dropdownStore";
 
@@ -45,18 +45,12 @@
     };
 
     function handleToggle() {
-        fontStore.toggle();
-        // Get the current font value to show in toast
-        let currentFont = "";
-        const unsubscribe = fontStore.subscribe((font) => {
-            currentFont = font;
-        });
-        unsubscribe();
-        toastStore.show(`Font changed to ${fontNames[currentFont]}`, "success");
+        font.toggle();
+        toastStore.show(`Font changed to ${fontNames[font.current]}`, "success");
     }
 
     function selectFont(
-        font:
+        selectedFont:
             | "default"
             | "josefin"
             | "cause"
@@ -64,8 +58,8 @@
             | "inconsolata"
             | "poppins",
     ) {
-        fontStore.set(font);
-        toastStore.show(`Font changed to ${fontNames[font]}`, "success");
+        font.set(selectedFont);
+        toastStore.show(`Font changed to ${fontNames[selectedFont]}`, "success");
         showDropdown = false;
         dropdownStore.close();
         if (hoverTimeout) {
@@ -94,7 +88,7 @@
         <div class="font-dropdown">
             <button
                 class="font-option"
-                class:active={$fontStore === "default"}
+                class:active={font.current === "default"}
                 onclick={() => selectFont("default")}
             >
                 <span
@@ -104,7 +98,7 @@
             </button>
             <button
                 class="font-option"
-                class:active={$fontStore === "josefin"}
+                class:active={font.current === "josefin"}
                 onclick={() => selectFont("josefin")}
             >
                 <span style="font-family: 'Josefin Sans', sans-serif;"
@@ -113,14 +107,14 @@
             </button>
             <button
                 class="font-option"
-                class:active={$fontStore === "cause"}
+                class:active={font.current === "cause"}
                 onclick={() => selectFont("cause")}
             >
                 <span style="font-family: 'Cause', cursive;">Cause</span>
             </button>
             <button
                 class="font-option"
-                class:active={$fontStore === "cabin"}
+                class:active={font.current === "cabin"}
                 onclick={() => selectFont("cabin")}
             >
                 <span style="font-family: 'Cabin Sketch', sans-serif;"
@@ -129,7 +123,7 @@
             </button>
             <button
                 class="font-option"
-                class:active={$fontStore === "inconsolata"}
+                class:active={font.current === "inconsolata"}
                 onclick={() => selectFont("inconsolata")}
             >
                 <span style="font-family: 'Inconsolata', monospace;"
@@ -138,7 +132,7 @@
             </button>
             <button
                 class="font-option"
-                class:active={$fontStore === "poppins"}
+                class:active={font.current === "poppins"}
                 onclick={() => selectFont("poppins")}
             >
                 <span style="font-family: 'Poppins', sans-serif;">Poppins</span>

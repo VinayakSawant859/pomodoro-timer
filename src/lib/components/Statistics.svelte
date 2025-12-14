@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
-    import { statsStore, sessionHistoryStore } from "$lib/stores";
+    import { stats, sessionHistory } from "$lib/state.svelte";
     import Chart from "chart.js/auto";
 
     export let onClose: () => void;
@@ -14,8 +14,8 @@
 
     onMount(async () => {
         // Load today's data
-        await statsStore.loadToday();
-        await sessionHistoryStore.loadToday();
+        await stats.loadToday();
+        await sessionHistory.loadToday();
 
         // Load weekly data
         await loadWeeklyData();
@@ -40,13 +40,13 @@
             const dateStr = date.toISOString().split("T")[0];
 
             try {
-                const stats = await statsStore.loadDaily(dateStr);
+                const dailyData = await stats.loadDaily(dateStr);
                 weekData.push({
                     date: dateStr,
                     label: formatWeekDay(date),
-                    pomodoros: stats?.pomodoros_completed || 0,
-                    workTime: stats?.total_work_time || 0,
-                    tasks: stats?.tasks_completed || 0,
+                    pomodoros: dailyData?.pomodoros_completed || 0,
+                    workTime: dailyData?.total_work_time || 0,
+                    tasks: dailyData?.tasks_completed || 0,
                 });
             } catch {
                 weekData.push({
@@ -73,7 +73,7 @@
         const ctx = todayChartCanvas.getContext("2d");
         if (!ctx) return;
 
-        const dailyHistory = $sessionHistoryStore;
+        const dailyHistory = sessionHistory.history;
         const workSessions =
             dailyHistory?.sessions.filter((s) => s.type === "work").length || 0;
         const shortBreaks =
@@ -230,13 +230,13 @@
 
         <div class="stats-content">
             <!-- Today's Summary -->
-            {#if $statsStore}
+            {#if stats.dailyStats}
                 <div class="summary-cards">
                     <div class="summary-card">
                         <div class="card-icon">🍅</div>
                         <div class="card-content">
                             <div class="card-value">
-                                {$statsStore.pomodoros_completed}
+                                {stats.dailyStats.pomodoros_completed}
                             </div>
                             <div class="card-label">Pomodoros Today</div>
                         </div>
@@ -245,7 +245,7 @@
                         <div class="card-icon">⏱️</div>
                         <div class="card-content">
                             <div class="card-value">
-                                {Math.floor($statsStore.total_work_time / 60)}h {$statsStore.total_work_time %
+                                {Math.floor(stats.dailyStats.total_work_time / 60)}h {stats.dailyStats.total_work_time %
                                     60}m
                             </div>
                             <div class="card-label">Work Time</div>
@@ -255,7 +255,7 @@
                         <div class="card-icon">✅</div>
                         <div class="card-content">
                             <div class="card-value">
-                                {$statsStore.tasks_completed}
+                                {stats.dailyStats.tasks_completed}
                             </div>
                             <div class="card-label">Tasks Done</div>
                         </div>

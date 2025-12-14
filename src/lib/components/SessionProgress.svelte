@@ -1,26 +1,27 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { sessionHistoryStore, timerStore } from "$lib/stores.ts";
-    import type { DailySessionHistory } from "$lib/stores.ts";
+    import { sessionHistory, timer } from "$lib/state.svelte";
+    import type { DailySessionHistory } from "$lib/state.svelte";
 
-    let dailyHistory: DailySessionHistory | null = null;
-    let expanded = false;
+    let expanded = $state(false);
 
-    // Subscribe to session history
-    sessionHistoryStore.subscribe((value) => {
-        dailyHistory = value;
-    });
+    // Use $derived to reactively get daily history
+    const dailyHistory = $derived(sessionHistory.history);
 
-    // Subscribe to timer changes to update session count
-    timerStore.subscribe(() => {
+    // Watch timer changes to reload sessions
+    $effect(() => {
+        // Access timer properties to create reactive dependency
+        timer.isRunning;
+        timer.sessionsCompleted;
+        
         // Reload today's sessions when timer state changes
         if (dailyHistory) {
-            sessionHistoryStore.loadToday();
+            sessionHistory.loadToday();
         }
     });
 
     onMount(() => {
-        sessionHistoryStore.loadToday();
+        sessionHistory.loadToday();
     });
 
     function toggleExpanded() {
@@ -93,7 +94,13 @@
 </script>
 
 <div class="session-progress">
-    <div class="progress-header" on:click={toggleExpanded}>
+    <div 
+        class="progress-header" 
+        onclick={toggleExpanded}
+        role="button"
+        tabindex="0"
+        onkeydown={(e) => e.key === 'Enter' && toggleExpanded()}
+    >
         <div class="progress-summary">
             <h3>Today's Sessions</h3>
             {#if dailyHistory}
@@ -134,7 +141,11 @@
                 </div>
             {/if}
         </div>
-        <button class="expand-btn" class:expanded>
+        <button 
+            class="expand-btn" 
+            class:expanded
+            aria-label={expanded ? "Collapse sessions" : "Expand sessions"}
+        >
             <svg
                 class="icon"
                 viewBox="0 0 24 24"

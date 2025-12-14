@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { themeStore } from "$lib/stores";
+    import { theme } from "$lib/state.svelte";
     import { toastStore } from "$lib/stores/toastStore";
     import { dropdownStore } from "$lib/stores/dropdownStore";
 
@@ -36,13 +36,7 @@
     }
 
     function handleToggle() {
-        themeStore.toggle();
-        // Get the current theme value to show in toast
-        let currentTheme = "";
-        const unsubscribe = themeStore.subscribe((theme) => {
-            currentTheme = theme;
-        });
-        unsubscribe();
+        theme.toggle();
         const themeNames: Record<string, string> = {
             light: "Light",
             dark: "Dark",
@@ -53,14 +47,22 @@
             flame: "Flame",
             anime: "Anime",
         };
-        const themeName = themeNames[currentTheme] || currentTheme;
+        const themeName = themeNames[theme.current] || theme.current;
         toastStore.show(`Theme changed to ${themeName}`, "success");
     }
 
     function selectTheme(
-        theme: "light" | "dark" | "academia" | "sakura" | "coffee" | "forest" | "flame" | "anime",
+        selectedTheme:
+            | "light"
+            | "dark"
+            | "academia"
+            | "sakura"
+            | "coffee"
+            | "forest"
+            | "flame"
+            | "anime",
     ) {
-        themeStore.set(theme);
+        theme.set(selectedTheme);
         const themeNames: Record<string, string> = {
             light: "Light",
             dark: "Dark",
@@ -71,7 +73,7 @@
             flame: "Flame",
             anime: "Anime",
         };
-        const themeName = themeNames[theme] || theme;
+        const themeName = themeNames[selectedTheme] || selectedTheme;
         toastStore.show(`Theme changed to ${themeName}`, "success");
         showDropdown = false;
         dropdownStore.close();
@@ -90,7 +92,7 @@
     onmouseleave={handleMouseLeave}
 >
     <button class="theme-toggle" onclick={handleToggle} title="Toggle theme">
-        {#if $themeStore === "light"}
+        {#if theme.current === "light"}
             <svg
                 class="icon"
                 viewBox="0 0 24 24"
@@ -107,7 +109,7 @@
                 <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
             </svg>
-        {:else if $themeStore === "dark"}
+        {:else if theme.current === "dark"}
             <svg
                 class="icon"
                 viewBox="0 0 24 24"
@@ -117,7 +119,7 @@
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
                 ></path>
             </svg>
-        {:else if $themeStore === "academia"}
+        {:else if theme.current === "academia"}
             <svg
                 class="icon"
                 viewBox="0 0 24 24"
@@ -125,11 +127,13 @@
                 stroke="currentColor"
             >
                 <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                <path
+                    d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+                ></path>
                 <path d="M12 6v8"></path>
                 <path d="M9 9h6"></path>
             </svg>
-        {:else if $themeStore === "sakura"}
+        {:else if theme.current === "sakura"}
             <svg
                 class="icon"
                 viewBox="0 0 24 24"
@@ -144,7 +148,7 @@
                 ></path>
                 <circle cx="12" cy="12" r="2"></circle>
             </svg>
-        {:else if $themeStore === "coffee"}
+        {:else if theme.current === "coffee"}
             <svg
                 class="icon"
                 viewBox="0 0 24 24"
@@ -157,7 +161,7 @@
                 <line x1="10" y1="2" x2="10" y2="4"></line>
                 <line x1="14" y1="2" x2="14" y2="4"></line>
             </svg>
-        {:else if $themeStore === "forest"}
+        {:else if theme.current === "forest"}
             <svg
                 class="icon"
                 viewBox="0 0 24 24"
@@ -168,23 +172,27 @@
                 <path d="M2 17l10 5 10-5"></path>
                 <path d="M2 12l10 5 10-5"></path>
             </svg>
-        {:else if $themeStore === "flame"}
+        {:else if theme.current === "flame"}
             <svg
                 class="icon"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
             >
-                <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+                <path
+                    d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"
+                ></path>
             </svg>
-        {:else if $themeStore === "anime"}
+        {:else if theme.current === "anime"}
             <svg
                 class="icon"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
             >
-                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                <polygon
+                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
+                ></polygon>
                 <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
             </svg>
         {/if}
@@ -194,7 +202,7 @@
         <div class="theme-dropdown">
             <button
                 class="theme-option"
-                class:active={$themeStore === "light"}
+                class:active={theme.current === "light"}
                 onclick={() => selectTheme("light")}
             >
                 <svg
@@ -217,7 +225,7 @@
             </button>
             <button
                 class="theme-option"
-                class:active={$themeStore === "dark"}
+                class:active={theme.current === "dark"}
                 onclick={() => selectTheme("dark")}
             >
                 <svg
@@ -233,7 +241,7 @@
             </button>
             <button
                 class="theme-option"
-                class:active={$themeStore === "academia"}
+                class:active={theme.current === "academia"}
                 onclick={() => selectTheme("academia")}
             >
                 <svg
@@ -243,7 +251,9 @@
                     stroke="currentColor"
                 >
                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    <path
+                        d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+                    ></path>
                     <path d="M12 6v8"></path>
                     <path d="M9 9h6"></path>
                 </svg>
@@ -251,7 +261,7 @@
             </button>
             <button
                 class="theme-option"
-                class:active={$themeStore === "sakura"}
+                class:active={theme.current === "sakura"}
                 onclick={() => selectTheme("sakura")}
             >
                 <svg
@@ -272,7 +282,7 @@
             </button>
             <button
                 class="theme-option"
-                class:active={$themeStore === "coffee"}
+                class:active={theme.current === "coffee"}
                 onclick={() => selectTheme("coffee")}
             >
                 <svg
@@ -291,7 +301,7 @@
             </button>
             <button
                 class="theme-option"
-                class:active={$themeStore === "forest"}
+                class:active={theme.current === "forest"}
                 onclick={() => selectTheme("forest")}
             >
                 <svg
@@ -308,7 +318,7 @@
             </button>
             <button
                 class="theme-option"
-                class:active={$themeStore === "flame"}
+                class:active={theme.current === "flame"}
                 onclick={() => selectTheme("flame")}
             >
                 <svg
@@ -317,13 +327,15 @@
                     fill="none"
                     stroke="currentColor"
                 >
-                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+                    <path
+                        d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"
+                    ></path>
                 </svg>
                 <span>Flame</span>
             </button>
             <button
                 class="theme-option"
-                class:active={$themeStore === "anime"}
+                class:active={theme.current === "anime"}
                 onclick={() => selectTheme("anime")}
             >
                 <svg
@@ -332,7 +344,9 @@
                     fill="none"
                     stroke="currentColor"
                 >
-                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                    <polygon
+                        points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
+                    ></polygon>
                     <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
                 </svg>
                 <span>Anime</span>

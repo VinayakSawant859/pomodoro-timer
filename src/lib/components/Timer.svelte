@@ -1,7 +1,6 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
-    import { timerStore, taskStore, audioStore } from "$lib/stores";
-    import { invoke } from "@tauri-apps/api/core";
+    import { timer, audio } from "$lib/state.svelte";
 
     let interval: number;
 
@@ -18,20 +17,20 @@
 
     // No props needed
 
-    // UI state management
+    // UI state management using $derived with new state
     const isTimerRunning = $derived(
-        $timerStore.isRunning || $timerStore.isPaused,
+        timer.isRunning || timer.isPaused,
     );
     const showSessionControls = $derived(!isTimerRunning);
 
-    const timeDisplay = $derived(formatTime($timerStore.timeRemaining));
+    const timeDisplay = $derived(formatTime(timer.timeRemaining));
     const sessionTypeDisplay = $derived(
-        $timerStore.currentSession.type === "work" ? "Work Time" : "Break Time",
+        timer.currentSession.type === "work" ? "Work Time" : "Break Time",
     );
     const progressPercentage = $derived(
-        (($timerStore.currentSession.duration * 60 -
-            $timerStore.timeRemaining) /
-            ($timerStore.currentSession.duration * 60)) *
+        ((timer.currentSession.duration * 60 -
+            timer.timeRemaining) /
+            (timer.currentSession.duration * 60)) *
             100,
     );
 
@@ -49,37 +48,37 @@
     }
 
     async function startTimer() {
-        if (!$timerStore.isRunning) {
-            await timerStore.start();
+        if (!timer.isRunning) {
+            await timer.start();
             // The $effect block will handle starting the interval
         }
     }
 
     async function pauseTimer() {
-        if ($timerStore.isRunning && !$timerStore.isPaused) {
-            await timerStore.stop();
-            audioStore.playStop();
+        if (timer.isRunning && !timer.isPaused) {
+            await timer.stop();
+            audio.playStop();
             clearInterval(interval);
         }
     }
 
     function resetTimer() {
-        timerStore.reset();
-        timerStore.setSession("work", selectedPreset.work);
+        timer.reset();
+        timer.setSession("work", selectedPreset.work);
         clearInterval(interval);
     }
 
     function applyPreset(preset: (typeof sessionPresets)[0]) {
         selectedPreset = preset;
-        timerStore.setSession("work", preset.work);
+        timer.setSession("work", preset.work);
     }
 
     function applyCustomSession() {
-        timerStore.setSession("work", customWork);
+        timer.setSession("work", customWork);
     }
 
     onMount(() => {
-        timerStore.setSession("work", selectedPreset.work);
+        timer.setSession("work", selectedPreset.work);
     });
 
     onDestroy(() => {
@@ -90,37 +89,37 @@
 
     // Watch for timer state changes and start interval if timer is running
     $effect(() => {
-        if ($timerStore.isRunning && !interval) {
+        if (timer.isRunning && !interval) {
             console.log("Timer is running, starting interval...");
             // Play appropriate start sound based on session type
             if (
-                $timerStore.currentSession.type === "break" &&
-                $timerStore.currentSession.duration === 5
+                timer.currentSession.type === "break" &&
+                timer.currentSession.duration === 5
             ) {
-                audioStore.playBreakStart();
+                audio.playBreakStart();
             } else {
-                audioStore.playStart();
+                audio.playStart();
             }
             interval = setInterval(async () => {
-                timerStore.tick();
+                timer.tick();
 
                 // Check if session is complete
-                if ($timerStore.timeRemaining <= 0) {
+                if (timer.timeRemaining <= 0) {
                     clearInterval(interval);
                     interval = undefined as any;
                     // Play appropriate complete sound based on session type
                     if (
-                        $timerStore.currentSession.type === "break" &&
-                        $timerStore.currentSession.duration === 5
+                        timer.currentSession.type === "break" &&
+                        timer.currentSession.duration === 5
                     ) {
-                        audioStore.playBreakComplete();
+                        audio.playBreakComplete();
                     } else {
-                        audioStore.playComplete();
+                        audio.playComplete();
                     }
-                    await timerStore.completeSession(false); // false = not interrupted
+                    await timer.completeSession(false); // false = not interrupted
                 }
             }, 1000);
-        } else if (!$timerStore.isRunning && interval) {
+        } else if (!timer.isRunning && interval) {
             console.log("Timer stopped, clearing interval...");
             clearInterval(interval);
             interval = undefined as any;
@@ -167,8 +166,8 @@
                 <div class="session-type">{sessionTypeDisplay}</div>
                 <div class="time">{timeDisplay}</div>
                 <div class="session-info">
-                    Session {$timerStore.sessionNumber} • {$timerStore
-                        .currentSession.duration}min {$timerStore.currentSession
+                    Session {timer.sessionNumber} • {timer
+                        .currentSession.duration}min {timer.currentSession
                         .type === "work"
                         ? "work"
                         : "break"}
@@ -179,7 +178,7 @@
     </div>
 
     <div class="timer-controls">
-        {#if !$timerStore.isRunning}
+        {#if !timer.isRunning}
             <button class="btn btn-primary" onclick={startTimer}>
                 <svg
                     class="icon"

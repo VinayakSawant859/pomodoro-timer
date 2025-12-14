@@ -1,18 +1,23 @@
 <script lang="ts">
-    import { taskStore, timerStore, statsStore } from "$lib/stores";
-    import type { Task, DailyStats } from "$lib/stores";
+    import { tasks, timer, stats } from "$lib/state.svelte";
+    import type { Task, DailyStats } from "$lib/state.svelte";
     import { onMount } from "svelte";
 
-    let newTaskText = "";
-    let editingTask: Task | null = null;
-    let editText = "";
-    let showStats = false;
+    // Use $props() for Svelte 5 runes mode
+    interface Props {
+        onStartTask?: () => void;
+    }
+    
+    let { onStartTask }: Props = $props();
 
-    // Callback prop to flip card and start timer
-    export let onStartTask: (() => void) | undefined = undefined;
+    let newTaskText = $state("");
+    let editingTask = $state<Task | null>(null);
+    let editText = $state("");
+    let showStats = $state(false);
 
-    $: incompleteTasks = $taskStore.filter((task) => !task.completed);
-    $: completedTasks = $taskStore.filter((task) => task.completed);
+    // Use $derived to compute filtered tasks
+    const incompleteTasks = $derived(tasks.tasks.filter((task) => !task.completed));
+    const completedTasks = $derived(tasks.tasks.filter((task) => task.completed));
 
     // Format date as dd/mm
     function formatDate(dateString: string): string {
@@ -36,14 +41,14 @@
 
     onMount(async () => {
         // Load tasks and daily stats for today
-        await taskStore.load();
-        await statsStore.loadToday();
+        await tasks.load();
+        await stats.loadToday();
     });
 
     async function addTask() {
         if (newTaskText.trim()) {
             try {
-                await taskStore.add(newTaskText.trim());
+                await tasks.add(newTaskText.trim());
                 newTaskText = "";
             } catch (error) {
                 console.error("Failed to add task:", error);
@@ -59,7 +64,7 @@
     async function saveEditTask() {
         if (editingTask && editText.trim()) {
             try {
-                await taskStore.updateText(editingTask.id, editText.trim());
+                await tasks.updateText(editingTask.id, editText.trim());
             } catch (error) {
                 console.error("Failed to update task:", error);
             }
@@ -76,9 +81,9 @@
     async function toggleTaskComplete(task: Task) {
         try {
             if (task.completed) {
-                await taskStore.uncomplete(task.id);
+                await tasks.uncomplete(task.id);
             } else {
-                await taskStore.complete(task.id);
+                await tasks.complete(task.id);
             }
         } catch (error) {
             console.error("Failed to toggle task completion:", error);
@@ -87,15 +92,15 @@
 
     async function deleteTask(taskId: string) {
         try {
-            await taskStore.remove(taskId);
+            await tasks.remove(taskId);
         } catch (error) {
             console.error("Failed to delete task:", error);
         }
     }
 
     function startTimerWithTask(taskId: string) {
-        if (!$timerStore.isRunning) {
-            timerStore.start(taskId);
+        if (!timer.isRunning) {
+            timer.start(taskId);
             // Flip card to show timer when task is started
             if (onStartTask) {
                 onStartTask();
@@ -153,24 +158,24 @@
             📊 Today's Stats ({getTodayDate()}) {showStats ? "▼" : "▶"}
         </button>
 
-        {#if showStats && $statsStore}
+        {#if showStats && stats.dailyStats}
             <div class="stats-content">
                 <div class="stat-item">
                     <span class="stat-label">🍅 Pomodoros:</span>
                     <span class="stat-value"
-                        >{$statsStore.pomodoros_completed}</span
+                        >{stats.dailyStats.pomodoros_completed}</span
                     >
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">⏱️ Work Time:</span>
                     <span class="stat-value"
-                        >{Math.floor($statsStore.total_work_time / 60)}h {$statsStore.total_work_time %
+                        >{Math.floor(stats.dailyStats.total_work_time / 60)}h {stats.dailyStats.total_work_time %
                             60}m</span
                     >
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">✅ Tasks Done:</span>
-                    <span class="stat-value">{$statsStore.tasks_completed}</span
+                    <span class="stat-value">{stats.dailyStats.tasks_completed}</span
                     >
                 </div>
             </div>
@@ -186,7 +191,7 @@
                     {#each incompleteTasks as task (task.id)}
                         <li
                             class="task-item"
-                            class:current={$timerStore.currentTaskId ===
+                            class:current={timer.currentTaskId ===
                                 task.id}
                         >
                             <div class="task-content">
@@ -231,7 +236,7 @@
                             </div>
 
                             <div class="task-actions">
-                                {#if !$timerStore.isRunning && $timerStore.currentTaskId !== task.id}
+                                {#if !timer.isRunning && timer.currentTaskId !== task.id}
                                     <button
                                         class="btn-icon"
                                         on:click={() =>

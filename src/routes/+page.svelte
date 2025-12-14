@@ -1,12 +1,12 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import {
-        timerStore,
-        taskStore,
-        themeStore,
-        fontStore,
-        sessionHistoryStore,
-    } from "$lib/stores";
+        timer,
+        tasks,
+        theme,
+        font,
+        sessionHistory,
+    } from "$lib/state.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import TaskManager from "$lib/components/TaskManager.svelte";
     import SessionProgress from "$lib/components/SessionProgress.svelte";
@@ -20,29 +20,26 @@
 
     onMount(async () => {
         // Initialize theme and font from localStorage
-        themeStore.init();
-        fontStore.init();
+        theme.init();
+        font.init();
 
         // Load tasks from database
         try {
-            await taskStore.load();
+            await tasks.load();
         } catch (error) {
             console.error("Failed to load tasks:", error);
         }
 
         // Load today's session history and initialize timer state
         try {
-            const todayHistory = await sessionHistoryStore.loadToday();
+            const todayHistory = await sessionHistory.loadToday();
 
-            // Update timer store with today's session count
+            // Update timer with today's session count
             if (todayHistory) {
-                timerStore.update((state) => ({
-                    ...state,
-                    dailySessionCount:
-                        todayHistory.total_work_sessions +
-                        todayHistory.total_break_sessions,
-                    sessionNumber: todayHistory.total_work_sessions + 1,
-                }));
+                timer.dailySessionCount =
+                    todayHistory.total_work_sessions +
+                    todayHistory.total_break_sessions;
+                timer.sessionNumber = todayHistory.total_work_sessions + 1;
             }
         } catch (error) {
             console.error("Failed to load session history:", error);
@@ -54,7 +51,7 @@
     <title>Pomodoro Timer</title>
 </svelte:head>
 
-<main class="app" data-theme={$themeStore} data-font={$fontStore}>
+<main class="app" data-theme={theme.current} data-font={font.current}>
     <header class="header">
         <div class="header-left">
             <h1>Pomodoro Timer <span class="author">by vinayak</span></h1>
@@ -125,50 +122,50 @@
 
 <style>
     :global(:root) {
-        --primary-color: #6C7CFF;
-        --primary-light: #8B98FF;
-        --primary-dark: #5565E8;
+        --primary-color: #6c7cff;
+        --primary-light: #8b98ff;
+        --primary-dark: #5565e8;
         --success-color: #10b981;
         --warning-color: #f59e0b;
         --error-color: #ef4444;
 
         /* Light theme - Modern & Premium */
-        --background-color: #F6F7FB;
-        --surface-color: #FFFFFF;
-        --text-color: #1E2433;
-        --text-secondary: #5F677A;
-        --border-color: #E3E6EF;
+        --background-color: #f6f7fb;
+        --surface-color: #ffffff;
+        --text-color: #1e2433;
+        --text-secondary: #5f677a;
+        --border-color: #e3e6ef;
         --shadow: rgba(30, 36, 51, 0.08);
     }
 
     :global([data-theme="dark"]) {
         /* Dark theme - Modern & Premium */
-        --primary-color: #6C7CFF;
-        --primary-light: #8B98FF;
-        --primary-dark: #5565E8;
+        --primary-color: #6c7cff;
+        --primary-light: #8b98ff;
+        --primary-dark: #5565e8;
 
-        --background-color: #0E1320;
-        --surface-color: #1A2133;
-        --text-color: #E6E9F2;
-        --text-secondary: #A8B0C3;
-        --border-color: #2A3347;
+        --background-color: #0e1320;
+        --surface-color: #1a2133;
+        --text-color: #e6e9f2;
+        --text-secondary: #a8b0c3;
+        --border-color: #2a3347;
         --shadow: rgba(0, 0, 0, 0.4);
     }
 
     :global([data-theme="academia"]) {
         /* Dark Academia Theme */
-        --primary-color: #3A4F7A;
-        --primary-light: #5C7AA8;
-        --primary-dark: #2A3857;
-        --success-color: #C9A24D;
-        --warning-color: #5C3D2E;
-        --error-color: #8B4513;
+        --primary-color: #3a4f7a;
+        --primary-light: #5c7aa8;
+        --primary-dark: #2a3857;
+        --success-color: #c9a24d;
+        --warning-color: #5c3d2e;
+        --error-color: #8b4513;
 
-        --background-color: #1E1B18;
+        --background-color: #1e1b18;
         --surface-color: rgba(42, 38, 33, 0.7);
-        --text-color: #EDE6D8;
-        --text-secondary: #B6B0A4;
-        --border-color: #5C3D2E;
+        --text-color: #ede6d8;
+        --text-secondary: #b6b0a4;
+        --border-color: #5c3d2e;
         --shadow: rgba(0, 0, 0, 0.5);
     }
 
@@ -206,17 +203,17 @@
            - text-secondary: Warm brown for hierarchy
            - accent: Caramel highlights
         */
-        --primary-color: #6D4C41;
-        --primary-light: #8D6E63;
-        --primary-dark: #4E342E;
-        --success-color: #6D4C41;
-        --warning-color: #A1887F;
-        --error-color: #4E342E;
+        --primary-color: #6d4c41;
+        --primary-light: #8d6e63;
+        --primary-dark: #4e342e;
+        --success-color: #6d4c41;
+        --warning-color: #a1887f;
+        --error-color: #4e342e;
 
-        --background-color: #F5EFE7;
+        --background-color: #f5efe7;
         --surface-color: rgba(161, 136, 127, 0.25);
-        --text-color: #3E2723;
-        --text-secondary: #7B5E57;
+        --text-color: #3e2723;
+        --text-secondary: #7b5e57;
         --border-color: rgba(109, 76, 65, 0.25);
         --shadow: rgba(62, 39, 35, 0.08);
     }
@@ -233,18 +230,18 @@
            - text-secondary: Muted stone for hierarchy
            - text-on-light: Deep charcoal for light backgrounds
         */
-        --primary-color: #6A7B5E;
-        --primary-light: #7F9270;
-        --primary-dark: #5A6B50;
-        --success-color: #6A7B5E;
-        --warning-color: #7A6F5E;
-        --error-color: #5A3B2E;
+        --primary-color: #6a7b5e;
+        --primary-light: #7f9270;
+        --primary-dark: #5a6b50;
+        --success-color: #6a7b5e;
+        --warning-color: #7a6f5e;
+        --error-color: #5a3b2e;
 
-        --background-color: #332C0F;
+        --background-color: #332c0f;
         --surface-color: #474329;
-        --text-color: #F4EEEB;
-        --text-secondary: #CFC8BC;
-        --border-color: #5A5340;
+        --text-color: #f4eeeb;
+        --text-secondary: #cfc8bc;
+        --border-color: #5a5340;
         --shadow: rgba(26, 22, 8, 0.6);
     }
 
@@ -259,17 +256,17 @@
            - flame-accent: Bright orange for gradients and glow
            - ember-accent: Deep red-orange for depth (rare use)
         */
-        --primary-color: #FF8C1A;
-        --primary-light: #FFB347;
-        --primary-dark: #C24A00;
-        --success-color: #FF8C1A;
-        --warning-color: #FFB347;
-        --error-color: #7A1E0E;
+        --primary-color: #ff8c1a;
+        --primary-light: #ffb347;
+        --primary-dark: #c24a00;
+        --success-color: #ff8c1a;
+        --warning-color: #ffb347;
+        --error-color: #7a1e0e;
 
-        --background-color: #0A0705;
+        --background-color: #0a0705;
         --surface-color: rgba(28, 22, 15, 0.7);
-        --text-color: #F5F1EB;
-        --text-secondary: #B8AFA3;
+        --text-color: #f5f1eb;
+        --text-secondary: #b8afa3;
         --border-color: rgba(255, 140, 26, 0.15);
         --shadow: rgba(255, 140, 26, 0.2);
     }
@@ -285,17 +282,17 @@
            - neon-accent: Bright purple glow for highlights
            - cyan-accent: Subtle cyan for special emphasis (minimal use)
         */
-        --primary-color: #7C5CFF;
-        --primary-light: #9B7FFF;
-        --primary-dark: #6344E6;
-        --success-color: #7C5CFF;
-        --warning-color: #B46CFF;
-        --error-color: #FF6B9D;
+        --primary-color: #7c5cff;
+        --primary-light: #9b7fff;
+        --primary-dark: #6344e6;
+        --success-color: #7c5cff;
+        --warning-color: #b46cff;
+        --error-color: #ff6b9d;
 
-        --background-color: #0B0A12;
+        --background-color: #0b0a12;
         --surface-color: rgba(22, 20, 39, 0.6);
-        --text-color: #EAE7FF;
-        --text-secondary: #A39FCB;
+        --text-color: #eae7ff;
+        --text-secondary: #a39fcb;
         --border-color: rgba(124, 92, 255, 0.2);
         --shadow: rgba(124, 92, 255, 0.15);
     }
