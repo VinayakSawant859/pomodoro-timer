@@ -3,7 +3,7 @@
 mod audio;
 mod database;
 
-use database::{AppSettings, DbPool};
+use database::AppSettings;
 use std::fs;
 use tauri::Manager;
 
@@ -48,7 +48,6 @@ async fn save_settings(app: tauri::AppHandle, settings: AppSettings) -> Result<(
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-#[cfg_attr(all(desktop, not(test)), tauri::mobile_entry_point)]
 fn main() {
     let (_audio_stream, audio_handle) = audio::AudioStream::new()
         .expect("Failed to initialize audio system");

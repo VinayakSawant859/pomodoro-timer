@@ -2,7 +2,6 @@ use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use tauri::{AppHandle, Manager, State};
 
 pub type DbPool = Pool<SqliteConnectionManager>;
