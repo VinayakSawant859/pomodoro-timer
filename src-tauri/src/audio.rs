@@ -51,7 +51,6 @@ pub async fn play_sound(
 ) -> Result<(), String> {
     let handle = state.handle.clone();
     
-    // Spawn a task to play the sound without blocking
     tokio::spawn(async move {
         if let Err(e) = play_sound_impl(handle, sound_name, app_handle).await {
             eprintln!("Failed to play sound: {}", e);
@@ -67,21 +66,17 @@ async fn play_sound_impl(
     sound_name: String,
     app_handle: AppHandle,
 ) -> Result<(), String> {
-    // Create a new sink for this one-shot sound
     let sink = Sink::try_new(&stream_handle)
         .map_err(|e| format!("Failed to create audio sink: {}", e))?;
     
-    // Determine file extension (default to .wav if not specified)
     let file_name = if sound_name.contains('.') {
         sound_name.clone()
     } else {
         format!("{}.wav", sound_name)
     };
     
-    // Find the audio file
     let audio_path = find_audio_file(&file_name, &app_handle)?;
     
-    // Load and play the audio
     let file = std::fs::File::open(&audio_path)
         .map_err(|e| format!("Failed to open audio file: {}", e))?;
     
@@ -89,8 +84,6 @@ async fn play_sound_impl(
         .map_err(|e| format!("Failed to decode audio: {}", e))?;
     
     sink.append(source);
-    
-    // Sleep until the sound finishes playing
     sink.sleep_until_end();
     
     Ok(())
@@ -109,12 +102,10 @@ pub async fn set_white_noise(
     let mut bg_sink_guard = state.bg_sink.lock()
         .map_err(|e| format!("Failed to acquire background sink lock: {}", e))?;
     
-    // Stop any existing background sound
     if let Some(existing_sink) = bg_sink_guard.take() {
         existing_sink.stop();
     }
     
-    // If a new sound is requested, start it
     if let Some(sound) = sound_name {
         let file_name = if sound.contains('.') {
             sound.clone()
@@ -122,28 +113,20 @@ pub async fn set_white_noise(
             format!("{}.wav", sound)
         };
         
-        // Find the audio file
         let audio_path = find_audio_file(&file_name, &app_handle)?;
         
-        // Create a new sink for background audio
         let sink = Sink::try_new(&state.handle)
             .map_err(|e| format!("Failed to create background sink: {}", e))?;
         
-        // Load the audio file
         let file = std::fs::File::open(&audio_path)
             .map_err(|e| format!("Failed to open audio file: {}", e))?;
         
         let source = Decoder::new(std::io::BufReader::new(file))
             .map_err(|e| format!("Failed to decode audio: {}", e))?;
         
-        // Make it loop indefinitely
         let looped_source = source.repeat_infinite();
         sink.append(looped_source);
-        
-        // Set volume (you can adjust this or make it configurable)
         sink.set_volume(0.3);
-        
-        // Store the sink
         *bg_sink_guard = Some(sink);
     }
     
@@ -191,9 +174,6 @@ pub fn is_white_noise_playing(state: tauri::State<'_, AudioState>) -> Result<boo
 
 /// Helper function to find audio files in various possible locations
 fn find_audio_file(file_name: &str, app_handle: &AppHandle) -> Result<PathBuf, String> {
-    // Try multiple paths to find the audio file
-    
-    // Try 1: Resource directory root (production)
     if let Ok(resource_path) = app_handle.path().resource_dir() {
         let path = resource_path.join(file_name);
         println!("Trying resource path: {:?}, exists: {}", path, path.exists());
@@ -201,7 +181,6 @@ fn find_audio_file(file_name: &str, app_handle: &AppHandle) -> Result<PathBuf, S
             return Ok(path);
         }
         
-        // Try 1b: Resource directory with _up_/static subdirectory (production)
         let path = resource_path.join("_up_").join("static").join(file_name);
         println!("Trying resource _up_/static path: {:?}, exists: {}", path, path.exists());
         if path.exists() {
@@ -209,7 +188,6 @@ fn find_audio_file(file_name: &str, app_handle: &AppHandle) -> Result<PathBuf, S
         }
     }
     
-    // Try 2: Static folder in project root (development)
     if let Ok(current_dir) = std::env::current_dir() {
         let path = current_dir.join("..").join("static").join(file_name);
         println!("Trying dev path: {:?}, exists: {}", path, path.exists());
@@ -218,7 +196,6 @@ fn find_audio_file(file_name: &str, app_handle: &AppHandle) -> Result<PathBuf, S
         }
     }
     
-    // Try 3: Current directory
     let path = PathBuf::from(file_name);
     if path.exists() {
         return Ok(path);
@@ -270,8 +247,6 @@ async fn play_notification_impl(
     Ok(())
 }
 
-// Placeholder sound generation functions
-// In a real implementation, you would generate actual WAV data or use pre-recorded files
 fn generate_work_complete_sound() -> Vec<u8> {
     vec![0; 1000] // Placeholder empty audio data
 }

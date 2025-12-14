@@ -74,13 +74,10 @@ const DB_VERSION: i32 = 2;
 
 fn init_db(app_data_dir: &PathBuf) -> Result<Connection, Box<dyn std::error::Error>> {
     fs::create_dir_all(app_data_dir)?;
-    let db_path = app_data_dir.join("pomodoro.db");
-    let conn = Connection::open(db_path)?;
+    let db_path = get_db_path(app_handle);
+    let conn = Connection::open(db_path).map_err(|e| e.to_string())?;
     
-    // Create or update database schema
-    migrate_database(&conn)?;
-    
-    Ok(conn)
+    let task: Task = conn.query_row(
 }
 
 fn migrate_database(conn: &Connection) -> Result<(), Box<dyn std::error::Error>> {
@@ -95,14 +92,12 @@ fn migrate_database(conn: &Connection) -> Result<(), Box<dyn std::error::Error>>
         "SELECT version FROM db_version ORDER BY version DESC LIMIT 1",
         [],
         |row| row.get(0)
-    ).unwrap_or(0);
+        .unwrap_or(0);
     
     if current_version < DB_VERSION {
-        // Run migrations
         for version in (current_version + 1)..=DB_VERSION {
             match version {
                 1 => {
-                    // Initial schema
                     conn.execute(
                         "CREATE TABLE IF NOT EXISTS tasks (
                             id TEXT PRIMARY KEY,
@@ -115,7 +110,6 @@ fn migrate_database(conn: &Connection) -> Result<(), Box<dyn std::error::Error>>
                     )?;
                 }
                 2 => {
-                    // Enhanced schema with new tables and columns
                     conn.execute(
                         "ALTER TABLE tasks ADD COLUMN priority INTEGER DEFAULT 0",
                         [],
@@ -131,7 +125,6 @@ fn migrate_database(conn: &Connection) -> Result<(), Box<dyn std::error::Error>>
                         [],
                     ).ok();
                     
-                    // Pomodoro sessions table
                     conn.execute(
                         "CREATE TABLE IF NOT EXISTS pomodoro_sessions (
                             id TEXT PRIMARY KEY,
@@ -146,7 +139,6 @@ fn migrate_database(conn: &Connection) -> Result<(), Box<dyn std::error::Error>>
                         [],
                     )?;
                     
-                    // Daily statistics table
                     conn.execute(
                         "CREATE TABLE IF NOT EXISTS daily_stats (
                             date TEXT PRIMARY KEY,
@@ -158,7 +150,6 @@ fn migrate_database(conn: &Connection) -> Result<(), Box<dyn std::error::Error>>
                         [],
                     )?;
                     
-                    // Settings table
                     conn.execute(
                         "CREATE TABLE IF NOT EXISTS settings (
                             key TEXT PRIMARY KEY,
@@ -172,7 +163,6 @@ fn migrate_database(conn: &Connection) -> Result<(), Box<dyn std::error::Error>>
             }
         }
         
-        // Update version
         conn.execute(
             "INSERT OR REPLACE INTO db_version (version) VALUES (?1)",
             [DB_VERSION],
@@ -406,8 +396,10 @@ async fn complete_pomodoro_session(
             [&session_id],
         ).map_err(|e| format!("Database error: {}", e))?;
         
-        // Update daily stats
-        let today = chrono::Utc::now().format("%Y-%m-%d").to_string();
+                .map_err(|e| e.to_string())?;
+        }
+        
+        let today = chrono::Local::now().format("%Y-%m-%d").to_string();
         conn.execute(
             "INSERT OR REPLACE INTO daily_stats (date, pomodoros_completed, created_at) 
              VALUES (?1, COALESCE((SELECT pomodoros_completed FROM daily_stats WHERE date = ?1), 0) + 1, ?2)",
@@ -449,7 +441,9 @@ async fn get_task_with_stats(
         })
     }).map_err(|e| format!("Task not found: {}", e))?;
     
-    // Get pomodoro sessions
+    )
+    .map_err(|e| e.to_string())?;
+    
     let mut stmt = conn.prepare(
         "SELECT id, task_id, session_type, duration_minutes, started_at, completed_at, interrupted 
          FROM pomodoro_sessions WHERE task_id = ?1 ORDER BY started_at DESC"
@@ -577,13 +571,11 @@ async fn save_settings(
     Ok(())
 }
 
+#[cfg_attr(all(desktop, not(test)), tauri::mobile_entry_point)]
 fn main() {
-    // Initialize audio stream BEFORE building the Tauri app
-    // This must be kept alive for the duration of the application
     let (_audio_stream, audio_handle) = audio::AudioStream::new()
         .expect("Failed to initialize audio system");
     
-    // Create the audio state that will be managed by Tauri
     let audio_state = audio::AudioState::new(audio_handle);
     
     tauri::Builder::default()
