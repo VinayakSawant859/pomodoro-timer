@@ -1,11 +1,17 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
-    import { timer, audio } from "$lib/state.svelte";
-    import { updateStatus, showNotification, formatTimerTitle } from "$lib/native";
+    import { timer, audio, tasks } from "$lib/state.svelte";
+    import {
+        updateStatus,
+        showNotification,
+        formatTimerTitle,
+    } from "$lib/native";
+    import { invoke } from "@tauri-apps/api/core";
+    import CompletionDialog from "./CompletionDialog.svelte";
 
     let interval: number;
+    let ambientNoiseEnabled = $state(false);
 
-    // Session presets
     const sessionPresets = [
         { name: "Short Session", work: 25, break: 5 },
         { name: "Long Session", work: 45, break: 15 },
@@ -75,7 +81,45 @@
         timer.setSession("work", customWork);
     }
 
+    async function toggleAmbientNoise() {
+        ambientNoiseEnabled = !ambientNoiseEnabled;
+        localStorage.setItem(
+            "ambientNoiseEnabled",
+            String(ambientNoiseEnabled),
+        );
+
+        if (ambientNoiseEnabled) {
+            await startAmbientNoise();
+        } else {
+            await stopAmbientNoise();
+        }
+    }
+
+    async function startAmbientNoise() {
+        try {
+            await invoke("set_white_noise", {
+                soundName: "boiler-ambient-noise.mp3",
+            });
+        } catch (error) {
+            console.error("Failed to start ambient noise:", error);
+            ambientNoiseEnabled = false;
+        }
+    }
+
+    async function stopAmbientNoise() {
+        try {
+            await invoke("set_white_noise", { soundName: null });
+        } catch (error) {
+            console.error("Failed to stop ambient noise:", error);
+        }
+    }
+
     onMount(() => {
+        const savedAmbient = localStorage.getItem("ambientNoiseEnabled");
+        if (savedAmbient === "true") {
+            ambientNoiseEnabled = true;
+            startAmbientNoise();
+        }
         timer.setSession("work", selectedPreset.work);
     });
 
@@ -104,7 +148,8 @@
                 // Update window title and tray tooltip every second
                 const mins = Math.floor(timer.timeRemaining / 60);
                 const secs = timer.timeRemaining % 60;
-                const sessionType = timer.currentSession.type === "work" ? "Focus" : "Break";
+                const sessionType =
+                    timer.currentSession.type === "work" ? "Focus" : "Break";
                 const titleText = formatTimerTitle(mins, secs, sessionType);
                 await updateStatus(titleText);
 
@@ -114,12 +159,14 @@
                     interval = undefined as any;
 
                     // Show native notification
-                    const notifTitle = timer.currentSession.type === "work" 
-                        ? "🎉 Work Session Complete!" 
-                        : "✨ Break Complete!";
-                    const notifBody = timer.currentSession.type === "work"
-                        ? "Great work! Time for a well-deserved break."
-                        : "Break's over. Ready to focus again?";
+                    const notifTitle =
+                        timer.currentSession.type === "work"
+                            ? "🎉 Work Session Complete!"
+                            : "✨ Break Complete!";
+                    const notifBody =
+                        timer.currentSession.type === "work"
+                            ? "Great work! Time for a well-deserved break."
+                            : "Break's over. Ready to focus again?";
                     await showNotification(notifTitle, notifBody);
 
                     // Play appropriate complete sound based on session type
@@ -131,7 +178,9 @@
                     } else {
                         audio.playComplete();
                     }
-                    await timer.completeSession(false); // false = not interrupted
+
+                    // Complete the session (this will trigger the dialog if needed)
+                    await timer.completeSession(false);
 
                     // Reset title to default
                     await updateStatus("Pomodoro Timer");
@@ -224,6 +273,35 @@
             </button>
         {/if}
 
+        <button
+            class="btn btn-outline ambient-toggle"
+            class:active={ambientNoiseEnabled}
+            onclick={toggleAmbientNoise}
+            title={ambientNoiseEnabled
+                ? "Stop Ambient Noise"
+                : "Start Ambient Noise"}
+        >
+            <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                {#if ambientNoiseEnabled}
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                    <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                    <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                {:else}
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="8" y1="15" x2="16" y2="15"></line>
+                    <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                    <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                {/if}
+            </svg>
+        </button>
+
         <button class="btn btn-outline" onclick={resetTimer}>
             <svg
                 class="icon"
@@ -237,6 +315,15 @@
             Reset
         </button>
     </div>
+
+    {#if timer.showCompletionDialog}
+        <CompletionDialog
+            taskId={timer.currentTaskId}
+            taskName={tasks.tasks.find((t) => t.id === timer.currentTaskId)
+                ?.text || "your task"}
+            onClose={() => timer.closeCompletionDialog()}
+        />
+    {/if}
 
     {#if !isTimerRunning}
         <div class="session-presets">
@@ -601,6 +688,17 @@
 
     .btn-outline:hover:not(:disabled) {
         background: var(--surface-color);
+    }
+
+    .ambient-toggle.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .ambient-toggle.active:hover:not(:disabled) {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
     }
 
     .icon {

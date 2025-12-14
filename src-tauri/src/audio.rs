@@ -126,7 +126,10 @@ pub async fn set_white_noise(
         
         let looped_source = source.repeat_infinite();
         sink.append(looped_source);
-        sink.set_volume(0.3);
+        
+        // Set moderate volume for ambient noise (0.50 = 50% volume)
+        // This ensures it's audible but not overpowering
+        sink.set_volume(0.70);
         *bg_sink_guard = Some(sink);
     }
     

@@ -19,22 +19,18 @@
     let showStatistics = $state(false);
 
     onMount(async () => {
-        // Initialize theme and font from localStorage
         theme.init();
         font.init();
 
-        // Load tasks from database
         try {
             await tasks.load();
         } catch (error) {
             console.error("Failed to load tasks:", error);
         }
 
-        // Load today's session history and initialize timer state
         try {
             const todayHistory = await sessionHistory.loadToday();
 
-            // Update timer with today's session count
             if (todayHistory) {
                 timer.dailySessionCount =
                     todayHistory.total_work_sessions +
@@ -86,6 +82,39 @@
                     <line x1="12" y1="20" x2="12" y2="10"></line>
                     <line x1="18" y1="20" x2="18" y2="4"></line>
                     <line x1="6" y1="20" x2="6" y2="16"></line>
+                </svg>
+            </button>
+            <button
+                class="toggle-btn monk-mode-header-toggle"
+                class:active={timer.monkMode}
+                onclick={async () => await timer.toggleMonkMode()}
+                title={timer.monkMode
+                    ? "Disable Monk Mode"
+                    : "Enable Monk Mode"}
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    {#if timer.monkMode}
+                        <text
+                            x="12"
+                            y="18"
+                            text-anchor="middle"
+                            font-size="16"
+                            fill="currentColor">🧘</text
+                        >
+                    {:else}
+                        <text
+                            x="12"
+                            y="18"
+                            text-anchor="middle"
+                            font-size="16"
+                            fill="currentColor">🧘‍♂️</text
+                        >
+                    {/if}
                 </svg>
             </button>
             <FontToggle />
@@ -383,6 +412,17 @@
         background: var(--primary-color);
         color: white;
         border-color: var(--primary-color);
+    }
+
+    .toggle-btn.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .toggle-btn.active:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
     }
 
     .toggle-btn svg {

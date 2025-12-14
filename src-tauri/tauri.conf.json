@@ -34,7 +34,8 @@
             "../static/task-add.wav",
             "../static/task-delete-timer-reset.wav",
             "../static/5min-break-start.wav",
-            "../static/5min-break-complete.wav"
+            "../static/5min-break-complete.wav",
+            "../static/boiler-ambient-noise.mp3"
         ],
         "shortDescription": "",
         "windows": {

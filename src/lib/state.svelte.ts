@@ -72,6 +72,8 @@ export class TimerState {
     sessionNumber = $state(1);
     dailySessionCount = $state(0);
     sessionStartTime = $state<string | undefined>(undefined);
+    showCompletionDialog = $state(false); // For the check-in system
+    monkMode = $state(false); // Monk Mode toggle
 
     async start(taskId?: string) {
         try {
@@ -140,15 +142,9 @@ export class TimerState {
             }
         }
 
-        // Auto-complete the task when a work session completes successfully
-        if (!interrupted && this.currentSession.type === 'work' && this.currentTaskId) {
-            console.log('Work session completed, auto-completing task:', this.currentTaskId);
-            try {
-                await tasks.complete(this.currentTaskId);
-            } catch (err) {
-                console.error('Failed to auto-complete task:', err);
-            }
-        }
+        // REMOVED AUTO-COMPLETE: No longer automatically completing tasks
+        // The user will be prompted via CompletionDialog instead
+        // This allows tasks that take multiple sessions to remain active
 
         // Record session in daily history
         if (!interrupted) {
@@ -171,9 +167,15 @@ export class TimerState {
         this.isRunning = false;
         this.isPaused = false;
         this.currentSessionId = undefined;
-        this.currentTaskId = undefined; // Clear current task after completion
+        // DON'T clear currentTaskId - keep it for the check-in dialog
         this.sessionNumber = newSessionType === 'work' ? this.sessionNumber + 1 : this.sessionNumber;
         this.dailySessionCount = interrupted ? this.dailySessionCount : this.dailySessionCount + 1;
+
+        // Show completion dialog for work sessions (not breaks)
+        if (!interrupted && this.currentSession.type === 'break' && this.currentTaskId) {
+            // A work session just completed (we're now switching to break)
+            this.showCompletionDialog = true;
+        }
 
         // Refresh stats after completing a session
         if (!interrupted) {
@@ -205,6 +207,24 @@ export class TimerState {
         this.sessionNumber = 1;
         this.dailySessionCount = 0;
         this.sessionStartTime = undefined;
+    }
+
+    async toggleMonkMode() {
+        this.monkMode = !this.monkMode;
+        try {
+            await invoke('set_monk_mode', { enabled: this.monkMode });
+            console.log('Monk Mode:', this.monkMode ? 'ACTIVATED 🧘' : 'Deactivated');
+        } catch (error) {
+            console.error('Failed to set monk mode:', error);
+            // Revert on error
+            this.monkMode = !this.monkMode;
+        }
+    }
+
+    closeCompletionDialog() {
+        this.showCompletionDialog = false;
+        // Clear the task association after dialog is handled
+        this.currentTaskId = undefined;
     }
 }
 

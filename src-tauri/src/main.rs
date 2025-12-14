@@ -5,11 +5,34 @@ mod database;
 
 use database::AppSettings;
 use std::fs;
+use std::sync::{Arc, Mutex};
 use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Manager, AppHandle,
 };
 use tauri::menu::{MenuBuilder, MenuItemBuilder};
+
+// Monk Mode state
+#[derive(Default)]
+struct MonkModeState {
+    enabled: Arc<Mutex<bool>>,
+}
+
+impl MonkModeState {
+    fn new() -> Self {
+        Self {
+            enabled: Arc::new(Mutex::new(false)),
+        }
+    }
+
+    fn is_enabled(&self) -> bool {
+        *self.enabled.lock().unwrap()
+    }
+
+    fn set_enabled(&self, enabled: bool) {
+        *self.enabled.lock().unwrap() = enabled;
+    }
+}
 
 #[tauri::command]
 async fn update_status(app: AppHandle, text: String) -> Result<(), String> {
@@ -24,6 +47,31 @@ async fn update_status(app: AppHandle, text: String) -> Result<(), String> {
     if let Some(tray) = app.tray_by_id("main-tray") {
         tray.set_tooltip(Some(&text))
             .map_err(|e| format!("Failed to set tray tooltip: {}", e))?;
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+async fn set_monk_mode(app: AppHandle, enabled: bool) -> Result<(), String> {
+    // Update state
+    let monk_mode_state = app.state::<MonkModeState>();
+    monk_mode_state.set_enabled(enabled);
+
+    if let Some(window) = app.get_webview_window("main") {
+        // Set fullscreen mode
+        window
+            .set_fullscreen(enabled)
+            .map_err(|e| format!("Failed to set fullscreen: {}", e))?;
+        
+        // Set always-on-top
+        window
+            .set_always_on_top(enabled)
+            .map_err(|e| format!("Failed to set always-on-top: {}", e))?;
+
+        println!("Monk Mode {}: Fullscreen={}, Always-on-top={}", 
+                 if enabled { "ACTIVATED 🧘" } else { "Deactivated" }, 
+                 enabled, enabled);
     }
 
     Ok(())
@@ -96,6 +144,7 @@ fn main() {
             get_settings,
             save_settings,
             update_status,
+            set_monk_mode,
             audio::play_sound,
             audio::play_notification_sound,
             audio::set_white_noise,
@@ -108,6 +157,10 @@ fn main() {
                 .map_err(|e| format!("Failed to initialize database: {}", e))?;
             
             app.manage(db_pool);
+
+            // Initialize monk mode state
+            let monk_mode_state = MonkModeState::new();
+            app.manage(monk_mode_state);
 
             // Setup system tray
             let show_item = MenuItemBuilder::with_id("show", "Show")
@@ -158,6 +211,23 @@ fn main() {
             app.manage(_tray);
             
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                // Check if monk mode is enabled
+                let monk_mode_state = window.state::<MonkModeState>();
+                if monk_mode_state.is_enabled() {
+                    // Prevent closing in monk mode
+                    api.prevent_close();
+                    
+                    // Log to console - user will see this in dev mode
+                    println!("🔒 Monk Mode: Cannot close during focus session!");
+                    
+                    // Note: Notifications should be triggered from the frontend
+                    // when user attempts to close. The Rust API doesn't provide
+                    // a simple way to send notifications from event handlers.
+                }
+            }
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
