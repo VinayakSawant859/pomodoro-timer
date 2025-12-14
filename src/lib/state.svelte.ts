@@ -477,7 +477,7 @@ export class StatsState {
     async loadDaily(date: string): Promise<DailyStats> {
         try {
             console.log('Loading daily stats for:', date);
-            const stats = await invoke<DailyStats>('get_daily_stats', { date });
+            const stats = await invoke<DailyStats>('get_daily_stats_by_date', { date });
             console.log('Daily stats loaded:', stats);
             if (stats) {
                 this.dailyStats = stats;
@@ -730,3 +730,66 @@ export const stats = new StatsState();
 export const sessionStats = new SessionStatsState();
 export const dataExport = new DataState();
 export const sessionHistory = new SessionHistoryState();
+
+// ============= Daily Summary State Class =============
+
+export class DailySummaryState {
+    showSummary = $state(false);
+    summaryData = $state<DailyStats | null>(null);
+    private lastShownDate = $state<string | null>(null);
+    private readonly STORAGE_KEY = 'pomodoro-last-summary-date';
+
+    init() {
+        if (typeof window !== 'undefined') {
+            this.lastShownDate = localStorage.getItem(this.STORAGE_KEY);
+        }
+    }
+
+    shouldShowSummary(): boolean {
+        const today = new Date().toISOString().split('T')[0];
+
+        // Don't show if already shown today
+        if (this.lastShownDate === today) {
+            return false;
+        }
+
+        // Check if there's meaningful data to show
+        if (!stats.dailyStats) {
+            return false;
+        }
+
+        const hasActivity = stats.dailyStats.pomodoros_completed > 0 ||
+            stats.dailyStats.total_work_time > 0 ||
+            stats.dailyStats.tasks_completed > 0;
+
+        return hasActivity;
+    }
+
+    async checkAndShow() {
+        if (this.shouldShowSummary() && stats.dailyStats) {
+            this.summaryData = stats.dailyStats;
+            this.showSummary = true;
+        }
+    }
+
+    dismiss() {
+        const today = new Date().toISOString().split('T')[0];
+        this.showSummary = false;
+        this.lastShownDate = today;
+
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(this.STORAGE_KEY, today);
+        }
+    }
+
+    // Manual trigger for testing or user-initiated summary
+    async showManual() {
+        await stats.loadToday();
+        if (stats.dailyStats) {
+            this.summaryData = stats.dailyStats;
+            this.showSummary = true;
+        }
+    }
+}
+
+export const dailySummary = new DailySummaryState();

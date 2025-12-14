@@ -52,6 +52,23 @@
     onclick={handleBackdropClick}
 >
     <div class="dialog-content" onclick={(e) => e.stopPropagation()}>
+        <div class="success-animation">
+            <svg class="success-icon" viewBox="0 0 52 52">
+                <circle
+                    class="success-circle"
+                    cx="26"
+                    cy="26"
+                    r="25"
+                    fill="none"
+                />
+                <path
+                    class="success-check"
+                    fill="none"
+                    d="M14.1 27.2l7.1 7.2 16.7-16.8"
+                />
+            </svg>
+        </div>
+
         <div class="dialog-header">
             <h2>🎯 Session Complete!</h2>
         </div>
@@ -107,15 +124,71 @@
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         background: var(--surface-color);
         backdrop-filter: blur(10px);
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .completion-dialog::backdrop {
         background: rgba(0, 0, 0, 0.7);
         backdrop-filter: blur(4px);
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
     }
 
     .dialog-content {
         padding: 2rem;
+    }
+
+    .success-animation {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .success-icon {
+        width: 80px;
+        height: 80px;
+    }
+
+    .success-circle {
+        stroke: #10b981;
+        stroke-width: 2;
+        stroke-dasharray: 166;
+        stroke-dashoffset: 166;
+        animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    }
+
+    .success-check {
+        stroke: #10b981;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+    }
+
+    @keyframes stroke {
+        100% {
+            stroke-dashoffset: 0;
+        }
     }
 
     .dialog-header {
@@ -160,7 +233,7 @@
 
     .dialog-actions button {
         flex: 1;
-        padding: 0.875rem 1.5rem;
+        padding: 1rem 1.5rem;
         font-size: 1rem;
         font-weight: 600;
         display: flex;
@@ -168,12 +241,31 @@
         justify-content: center;
         gap: 0.5rem;
         transition: all 0.2s;
+        border-radius: 0.75rem;
+        cursor: pointer;
     }
 
     .btn-success {
         background: linear-gradient(135deg, #10b981, #059669);
         color: white;
         border: none;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-secondary {
+        background: var(--surface-color);
+        border: 2px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--text-secondary);
+        background: var(--hover-bg);
     }
 
     .btn-success:hover {

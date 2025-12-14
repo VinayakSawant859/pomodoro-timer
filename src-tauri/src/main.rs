@@ -139,6 +139,7 @@ fn main() {
             database::complete_pomodoro_session,
             database::get_task_with_stats,
             database::get_daily_stats,
+            database::get_daily_stats_by_date,
             database::get_focus_heatmap,
             database::export_data,
             get_settings,

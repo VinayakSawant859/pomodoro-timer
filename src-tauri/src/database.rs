@@ -510,6 +510,45 @@ pub async fn get_daily_stats(state: State<'_, DbPool>) -> Result<Vec<DailyStats>
 }
 
 #[tauri::command]
+pub async fn get_daily_stats_by_date(
+    state: State<'_, DbPool>,
+    date: String,
+) -> Result<DailyStats, String> {
+    let pool = state.inner();
+    let conn = pool.get().map_err(|e| format!("Failed to get connection: {}", e))?;
+
+    let mut stmt = conn
+        .prepare(
+            "SELECT date, pomodoros_completed, total_work_time, tasks_completed 
+             FROM daily_stats WHERE date = ?1",
+        )
+        .map_err(|e| format!("Database error: {}", e))?;
+
+    let result = stmt.query_row([&date], |row| {
+        Ok(DailyStats {
+            date: row.get(0)?,
+            pomodoros_completed: row.get(1)?,
+            total_work_time: row.get(2)?,
+            tasks_completed: row.get(3)?,
+        })
+    });
+
+    match result {
+        Ok(stats) => Ok(stats),
+        Err(rusqlite::Error::QueryReturnedNoRows) => {
+            // No stats for this date, return empty stats
+            Ok(DailyStats {
+                date,
+                pomodoros_completed: 0,
+                total_work_time: 0,
+                tasks_completed: 0,
+            })
+        }
+        Err(e) => Err(format!("Database error: {}", e)),
+    }
+}
+
+#[tauri::command]
 pub async fn get_focus_heatmap(
     state: State<'_, DbPool>,
     days: Option<u32>,

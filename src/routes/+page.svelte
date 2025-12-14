@@ -6,6 +6,7 @@
         theme,
         font,
         sessionHistory,
+        dailySummary,
     } from "$lib/state.svelte";
     import Timer from "$lib/components/Timer.svelte";
     import TaskManager from "$lib/components/TaskManager.svelte";
@@ -14,6 +15,7 @@
     import FontToggle from "$lib/components/FontToggle.svelte";
     import Statistics from "$lib/components/Statistics.svelte";
     import Toast from "$lib/components/Toast.svelte";
+    import DailySummary from "$lib/components/DailySummary.svelte";
 
     let showTasks = $state(false);
     let showStatistics = $state(false);
@@ -21,6 +23,7 @@
     onMount(async () => {
         theme.init();
         font.init();
+        dailySummary.init();
 
         try {
             await tasks.load();
@@ -40,6 +43,24 @@
         } catch (error) {
             console.error("Failed to load session history:", error);
         }
+
+        // Check for daily summary on mount (e.g., when app opens at end of day)
+        dailySummary.checkAndShow();
+
+        // Set up interval to check for end-of-day periodically
+        const checkInterval = setInterval(() => {
+            const now = new Date();
+            const hours = now.getHours();
+
+            // Check between 9 PM and 11:59 PM
+            if (hours >= 21 && hours <= 23) {
+                dailySummary.checkAndShow();
+            }
+        }, 1800000); // Check every 30 minutes
+
+        return () => {
+            clearInterval(checkInterval);
+        };
     });
 </script>
 
@@ -76,7 +97,7 @@
             <button
                 class="toggle-btn stats-toggle"
                 onclick={() => (showStatistics = true)}
-                title="View Statistics"
+                title="View Statistics - Track your productivity and progress"
             >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <line x1="12" y1="20" x2="12" y2="10"></line>
@@ -89,33 +110,12 @@
                 class:active={timer.monkMode}
                 onclick={async () => await timer.toggleMonkMode()}
                 title={timer.monkMode
-                    ? "Disable Monk Mode"
-                    : "Enable Monk Mode"}
+                    ? "Disable Monk Mode - Exit fullscreen focus"
+                    : "Enable Monk Mode - Fullscreen distraction-free focus"}
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                >
-                    {#if timer.monkMode}
-                        <text
-                            x="12"
-                            y="18"
-                            text-anchor="middle"
-                            font-size="16"
-                            fill="currentColor">🧘</text
-                        >
-                    {:else}
-                        <text
-                            x="12"
-                            y="18"
-                            text-anchor="middle"
-                            font-size="16"
-                            fill="currentColor">🧘‍♂️</text
-                        >
-                    {/if}
-                </svg>
+                <span class="material-symbols-outlined monk-mode-icon">
+                    self_improvement
+                </span>
             </button>
             <FontToggle />
             <ThemeToggle />
@@ -146,10 +146,44 @@
         <Statistics onClose={() => (showStatistics = false)} />
     {/if}
 
+    {#if dailySummary.showSummary && dailySummary.summaryData}
+        <DailySummary
+            dailyStats={dailySummary.summaryData}
+            onClose={() => dailySummary.dismiss()}
+        />
+    {/if}
+
     <Toast />
 </main>
 
 <style>
+    /* Theme Transitions - Smooth color crossfades */
+    :global(:root),
+    :global([data-theme]) {
+        /* Smooth transitions for theme changes */
+        transition:
+            background-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+            color 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    :global(*) {
+        /* Apply smooth transitions to all theme-aware properties */
+        transition:
+            background-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+            border-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+            color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+            box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Respect reduced motion preference */
+    @media (prefers-reduced-motion: reduce) {
+        :global(:root),
+        :global([data-theme]),
+        :global(*) {
+            transition: none !important;
+        }
+    }
+
     :global(:root) {
         --primary-color: #6c7cff;
         --primary-light: #8b98ff;
@@ -384,7 +418,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 2rem 0;
+        padding: 2.5rem 0;
         border-bottom: 1px solid var(--border-color);
     }
 
@@ -405,13 +439,22 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .toggle-btn:hover {
         background: var(--primary-color);
         color: white;
         border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .toggle-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .toggle-btn.active {
@@ -428,6 +471,24 @@
     .toggle-btn svg {
         width: 1.25rem;
         height: 1.25rem;
+        stroke-width: 2.5;
+    }
+
+    /* Material Symbols Icon Styling */
+    .material-symbols-outlined {
+        font-variation-settings:
+            "FILL" 0,
+            "wght" 400,
+            "GRAD" 0,
+            "opsz" 24;
+        font-size: 1.5rem;
+        user-select: none;
+    }
+
+    .monk-mode-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .header-left {
@@ -439,6 +500,7 @@
     .header h1 {
         font-size: 2rem;
         font-weight: 600;
+        letter-spacing: -0.02em;
         color: var(--primary-color);
         display: flex;
         align-items: baseline;
@@ -448,8 +510,10 @@
     .author {
         font-size: 0.9rem;
         font-weight: 400;
+        letter-spacing: 0.01em;
         color: var(--text-secondary);
         font-style: italic;
+        opacity: 0.7;
     }
 
     .content {
@@ -465,7 +529,7 @@
         max-width: 800px;
         display: flex;
         flex-direction: column;
-        gap: 2rem;
+        gap: 2.5rem;
     }
 
     .flip-card {

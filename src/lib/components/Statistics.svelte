@@ -3,7 +3,11 @@
     import { stats, sessionHistory } from "$lib/state.svelte";
     import Chart from "chart.js/auto";
 
-    export let onClose: () => void;
+    interface Props {
+        onClose: () => void;
+    }
+
+    let { onClose }: Props = $props();
 
     let todayChartCanvas: HTMLCanvasElement;
     let weeklyChartCanvas: HTMLCanvasElement;
@@ -11,6 +15,28 @@
     let weeklyChart: Chart | null = null;
 
     let weeklyData: any[] = [];
+    let showDetails = $state(false);
+
+    // Derived insights for calm reflection
+    const focusQuality = $derived(() => {
+        if (!stats.dailyStats) return null;
+        const pomodoros = stats.dailyStats.pomodoros_completed;
+        if (pomodoros === 0) return "Just getting started";
+        if (pomodoros <= 2) return "Building momentum";
+        if (pomodoros <= 4) return "Steady progress";
+        if (pomodoros <= 6) return "Deep focus";
+        return "Exceptional dedication";
+    });
+
+    const timeInvestment = $derived(() => {
+        if (!stats.dailyStats) return null;
+        const minutes = stats.dailyStats.total_work_time;
+        if (minutes < 30) return "Taking it easy today";
+        if (minutes < 60) return "Good effort invested";
+        if (minutes < 120) return "Solid work session";
+        if (minutes < 180) return "Deeply engaged";
+        return "Remarkable commitment";
+    });
 
     onMount(async () => {
         // Load today's data
@@ -207,18 +233,18 @@
     }
 </script>
 
-<div class="stats-overlay" on:click={onClose} role="presentation">
+<div class="stats-overlay" onclick={onClose} role="presentation">
     <div
         class="stats-modal"
-        on:click|stopPropagation
+        onclick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
     >
         <div class="stats-header">
-            <h2>📊 Statistics Dashboard</h2>
+            <h2>📊 Your Focus Journey</h2>
             <button
                 class="close-btn"
-                on:click={onClose}
+                onclick={onClose}
                 aria-label="Close statistics"
             >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -229,16 +255,22 @@
         </div>
 
         <div class="stats-content">
-            <!-- Today's Summary -->
+            <!-- Calm Reflection Summary -->
             {#if stats.dailyStats}
+                <div class="reflection-section">
+                    <h3 class="reflection-title">Today's Reflection</h3>
+                    <p class="reflection-insight">{focusQuality()}</p>
+                    <p class="reflection-subtext">{timeInvestment()}</p>
+                </div>
+
                 <div class="summary-cards">
-                    <div class="summary-card">
+                    <div class="summary-card primary">
                         <div class="card-icon">🍅</div>
                         <div class="card-content">
                             <div class="card-value">
                                 {stats.dailyStats.pomodoros_completed}
                             </div>
-                            <div class="card-label">Pomodoros Today</div>
+                            <div class="card-label">Focus Sessions</div>
                         </div>
                     </div>
                     <div class="summary-card">
@@ -249,7 +281,7 @@
                                     stats.dailyStats.total_work_time / 60,
                                 )}h {stats.dailyStats.total_work_time % 60}m
                             </div>
-                            <div class="card-label">Work Time</div>
+                            <div class="card-label">Time Invested</div>
                         </div>
                     </div>
                     <div class="summary-card">
@@ -258,28 +290,42 @@
                             <div class="card-value">
                                 {stats.dailyStats.tasks_completed}
                             </div>
-                            <div class="card-label">Tasks Done</div>
-                        </div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="card-icon">📅</div>
-                        <div class="card-content">
-                            <div class="card-value">{getTodayDate()}</div>
-                            <div class="card-label">Today</div>
+                            <div class="card-label">Tasks Completed</div>
                         </div>
                     </div>
                 </div>
             {/if}
 
-            <!-- Charts -->
-            <div class="charts-container">
-                <div class="chart-wrapper">
-                    <canvas bind:this={todayChartCanvas}></canvas>
-                </div>
-                <div class="chart-wrapper">
-                    <canvas bind:this={weeklyChartCanvas}></canvas>
-                </div>
+            <!-- Expandable Details -->
+            <div class="details-toggle">
+                <button
+                    class="toggle-btn"
+                    onclick={() => (showDetails = !showDetails)}
+                >
+                    {showDetails ? "Hide" : "Show"} Detailed Insights
+                    <svg
+                        class="toggle-icon"
+                        class:rotated={showDetails}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                    >
+                        <polyline points="6,9 12,15 18,9"></polyline>
+                    </svg>
+                </button>
             </div>
+
+            {#if showDetails}
+                <!-- Charts -->
+                <div class="charts-container">
+                    <div class="chart-wrapper">
+                        <canvas bind:this={todayChartCanvas}></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas bind:this={weeklyChartCanvas}></canvas>
+                    </div>
+                </div>
+            {/if}
         </div>
     </div>
 </div>
@@ -301,20 +347,23 @@
 
     .stats-modal {
         background: var(--surface-color);
-        border-radius: 1rem;
+        border-radius: 1.25rem;
         max-width: 1200px;
         width: 100%;
         max-height: 90vh;
         overflow-y: auto;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        border: 1px solid var(--border-color);
+        box-shadow:
+            0 20px 60px rgba(0, 0, 0, 0.2),
+            0 8px 24px rgba(0, 0, 0, 0.12),
+            0 0 0 1px rgba(0, 0, 0, 0.05);
+        border: none;
     }
 
     .stats-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1.5rem 2rem;
+        padding: 2rem 2.5rem;
         border-bottom: 1px solid var(--border-color);
     }
 
@@ -341,16 +390,54 @@
     .close-btn:hover {
         background: var(--background-color);
         color: var(--text-color);
+        transform: scale(1.1);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .close-btn svg {
         width: 1.5rem;
         height: 1.5rem;
-        stroke-width: 2;
+        stroke-width: 2.5;
     }
 
     .stats-content {
+        padding: 2.5rem;
+        overflow-y: auto;
+        max-height: calc(90vh - 80px);
+    }
+
+    .reflection-section {
+        text-align: center;
+        margin-bottom: 2.5rem;
         padding: 2rem;
+        background: linear-gradient(
+            135deg,
+            rgba(99, 102, 241, 0.05),
+            rgba(139, 92, 246, 0.05)
+        );
+        border-radius: 1rem;
+        border: 1px solid rgba(99, 102, 241, 0.1);
+    }
+
+    .reflection-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 0.75rem;
+    }
+
+    .reflection-insight {
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .reflection-subtext {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        font-weight: 500;
     }
 
     .summary-cards {
@@ -362,18 +449,33 @@
 
     .summary-card {
         background: var(--background-color);
-        border: 1px solid var(--border-color);
-        border-radius: 0.75rem;
-        padding: 1.5rem;
+        border: 2px solid var(--border-color);
+        border-radius: 1rem;
+        padding: 1.75rem;
         display: flex;
         align-items: center;
-        gap: 1rem;
-        transition: all 0.2s ease;
+        gap: 1.25rem;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .summary-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-color: var(--primary-color);
+        transform: translateY(-3px) scale(1.01);
+        box-shadow:
+            0 8px 20px rgba(0, 0, 0, 0.1),
+            0 4px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .summary-card.primary {
+        border-color: var(--primary-color);
+        background: linear-gradient(
+            135deg,
+            rgba(99, 102, 241, 0.05),
+            rgba(139, 92, 246, 0.05)
+        );
+        box-shadow:
+            0 4px 12px rgba(99, 102, 241, 0.12),
+            0 2px 4px rgba(99, 102, 241, 0.08);
     }
 
     .card-icon {
@@ -387,6 +489,7 @@
     .card-value {
         font-size: 1.5rem;
         font-weight: 700;
+        letter-spacing: 0.02em;
         color: var(--primary-color);
         margin-bottom: 0.25rem;
     }
@@ -395,12 +498,63 @@
         font-size: 0.875rem;
         color: var(--text-secondary);
         font-weight: 500;
+        letter-spacing: 0.02em;
+        opacity: 0.85;
+    }
+
+    .details-toggle {
+        margin: 2rem 0;
+        text-align: center;
+    }
+
+    .toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--surface-color);
+        border: 2px solid var(--border-color);
+        border-radius: 0.5rem;
+        color: var(--text-color);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .toggle-btn:hover {
+        border-color: var(--primary-color);
+        background: var(--hover-bg);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .toggle-icon {
+        width: 1rem;
+        height: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .toggle-icon.rotated {
+        transform: rotate(180deg);
     }
 
     .charts-container {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
         gap: 2rem;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .chart-wrapper {

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
-    import { timer, audio, tasks } from "$lib/state.svelte";
+    import { timer, audio, tasks, dailySummary } from "$lib/state.svelte";
     import {
         updateStatus,
         showNotification,
@@ -38,6 +38,17 @@
             100,
     );
 
+    // Active task integration
+    const activeTask = $derived(
+        timer.currentTaskId
+            ? tasks.tasks.find((t) => t.id === timer.currentTaskId)
+            : null,
+    );
+
+    // Animation states
+    let isStarting = $state(false);
+    let isCompleting = $state(false);
+
     function formatTime(seconds: number): string {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -53,8 +64,12 @@
 
     async function startTimer() {
         if (!timer.isRunning) {
+            isStarting = true;
             await timer.start();
             // The $effect block will handle starting the interval
+            setTimeout(() => {
+                isStarting = false;
+            }, 600);
         }
     }
 
@@ -182,6 +197,12 @@
                     // Complete the session (this will trigger the dialog if needed)
                     await timer.completeSession(false);
 
+                    // Check if we should show daily summary (natural end-of-day check)
+                    // Only check after completing a work session
+                    if (timer.currentSession.type === "break") {
+                        await dailySummary.checkAndShow();
+                    }
+
                     // Reset title to default
                     await updateStatus("Pomodoro Timer");
                 }
@@ -205,8 +226,15 @@
             </linearGradient>
         </defs>
     </svg>
-    <div class="timer-display">
-        <div class="circular-progress">
+    <div
+        class="timer-display"
+        class:starting={isStarting}
+        class:completing={isCompleting}
+    >
+        <div
+            class="circular-progress"
+            data-session-type={timer.currentSession.type}
+        >
             <svg class="progress-ring" width="280" height="280">
                 <circle
                     class="progress-ring-background"
@@ -232,8 +260,49 @@
                 />
             </svg>
             <div class="timer-content">
-                <div class="session-type">{sessionTypeDisplay}</div>
+                <div class="session-type" data-type={timer.currentSession.type}>
+                    {#if timer.currentSession.type === "work"}
+                        <svg
+                            class="session-icon"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12,6 12,12 16,14"></polyline>
+                        </svg>
+                    {:else}
+                        <svg
+                            class="session-icon"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                            ></path>
+                        </svg>
+                    {/if}
+                    {sessionTypeDisplay}
+                </div>
                 <div class="time">{timeDisplay}</div>
+                {#if activeTask}
+                    <div class="active-task-indicator">
+                        <svg
+                            class="task-icon"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22,4 12,14.01 9,11.01"></polyline>
+                        </svg>
+                        <span class="task-name">{activeTask.text}</span>
+                    </div>
+                {/if}
                 <div class="session-info">
                     Session {timer.sessionNumber} • {timer.currentSession
                         .duration}min {timer.currentSession.type === "work"
@@ -278,8 +347,8 @@
             class:active={ambientNoiseEnabled}
             onclick={toggleAmbientNoise}
             title={ambientNoiseEnabled
-                ? "Stop Ambient Noise"
-                : "Start Ambient Noise"}
+                ? "Stop Ambient Noise - Turn off background sound"
+                : "Start Ambient Noise - Play calming background sound to help focus"}
         >
             <svg
                 class="icon"
@@ -302,7 +371,11 @@
             </svg>
         </button>
 
-        <button class="btn btn-outline" onclick={resetTimer}>
+        <button
+            class="btn btn-outline"
+            onclick={resetTimer}
+            title="Reset Timer - Start over with current session settings"
+        >
             <svg
                 class="icon"
                 viewBox="0 0 24 24"
@@ -334,8 +407,27 @@
                         class="preset-btn"
                         class:active={selectedPreset === preset}
                         onclick={() => applyPreset(preset)}
+                        title={preset.name === "Short Session"
+                            ? "Perfect for quick tasks and maintaining momentum"
+                            : preset.name === "Long Session"
+                              ? "Ideal for deep work requiring extended focus"
+                              : "Maximum concentration for complex challenges"}
                     >
-                        <div class="preset-name">{preset.name}</div>
+                        <div class="preset-name">
+                            {#if selectedPreset === preset}
+                                <svg
+                                    class="check-icon"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="3"
+                                >
+                                    <polyline points="20,6 9,17 4,12"
+                                    ></polyline>
+                                </svg>
+                            {/if}
+                            {preset.name}
+                        </div>
                         <div class="preset-times">
                             {preset.work}m work / {preset.break}m break
                         </div>
@@ -397,16 +489,19 @@
 <style>
     .timer-container {
         background: var(--surface-color);
-        border-radius: 1rem;
-        padding: 2rem;
-        box-shadow: 0 4px 6px -1px var(--shadow);
-        border: 1px solid var(--border-color);
+        border-radius: 1.25rem;
+        padding: 2.5rem;
+        box-shadow:
+            0 1px 3px rgba(0, 0, 0, 0.08),
+            0 4px 12px rgba(0, 0, 0, 0.05),
+            0 0 0 1px var(--border-color);
+        border: none;
     }
 
     .timer-display {
         display: flex;
         justify-content: center;
-        margin-bottom: 2rem;
+        margin-bottom: 2.5rem;
     }
 
     .circular-progress {
@@ -440,20 +535,73 @@
     }
 
     .session-type {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
         font-size: 1.1rem;
         font-weight: 500;
-        color: var(--text-secondary);
-        margin-bottom: 0.5rem;
+        letter-spacing: 0.02em;
+        margin-bottom: 1rem;
+        opacity: 0.85;
+        transition: all 0.3s ease;
+    }
+
+    .session-type[data-type="work"] {
+        color: var(--primary-color);
+    }
+
+    .session-type[data-type="break"] {
+        color: #10b981;
+    }
+
+    .session-icon {
+        width: 1.25rem;
+        height: 1.25rem;
+        stroke-width: 2.5;
     }
 
     .time {
         font-size: 3.5rem;
         font-weight: 700;
+        letter-spacing: 0.05em;
         color: var(--primary-color);
         margin-bottom: 0.5rem;
         font-variant-numeric: tabular-nums;
         line-height: 1;
         font-family: "Courier New", monospace;
+    }
+
+    .active-task-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin: 0.75rem 0;
+        padding: 0.5rem 1rem;
+        background: var(--hover-bg);
+        border-radius: 0.5rem;
+        border: 1px solid var(--border-color);
+        max-width: 250px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .task-icon {
+        width: 1rem;
+        height: 1rem;
+        color: var(--primary-color);
+        flex-shrink: 0;
+    }
+
+    .task-name {
+        font-size: 0.9rem;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        color: var(--text-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .session-info {
@@ -467,6 +615,34 @@
         color: var(--text-secondary);
         font-weight: 400;
         margin-top: 0.25rem;
+    }
+
+    /* Animation for timer start */
+    .timer-display.starting .circular-progress {
+        animation: pulse 0.6s ease-out;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    /* Session type color coding for progress ring */
+    .circular-progress[data-session-type="work"] .progress-ring-progress {
+        stroke: url(#gradient);
+        filter: drop-shadow(0 0 4px var(--primary-color));
+    }
+
+    .circular-progress[data-session-type="break"] .progress-ring-progress {
+        stroke: #10b981;
+        filter: drop-shadow(0 0 4px #10b981);
     }
 
     .timer-controls {
@@ -494,29 +670,47 @@
         border-radius: 0.75rem;
         padding: 1.25rem;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         color: var(--text-color);
         text-align: left;
         width: 100%;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow:
+            0 1px 3px rgba(0, 0, 0, 0.06),
+            0 2px 4px rgba(0, 0, 0, 0.04);
     }
 
     .preset-btn:hover {
         border-color: var(--primary-color);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow:
+            0 4px 12px rgba(0, 0, 0, 0.1),
+            0 2px 6px rgba(0, 0, 0, 0.06);
         background: var(--background-color);
+    }
+
+    .preset-btn:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow:
+            0 1px 3px rgba(0, 0, 0, 0.06),
+            0 2px 4px rgba(0, 0, 0, 0.04);
+        transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .preset-btn.active {
         border-color: var(--primary-color);
+        border-width: 3px;
         background: linear-gradient(
             135deg,
             var(--primary-color),
             var(--primary-light)
         );
+        box-shadow:
+            0 4px 12px rgba(99, 102, 241, 0.25),
+            0 2px 4px rgba(99, 102, 241, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
         color: white;
-        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        transform: scale(1.02);
     }
 
     .preset-btn.active .preset-name,
@@ -531,15 +725,37 @@
     }
 
     .preset-name {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
         font-weight: 600;
+        letter-spacing: 0.01em;
         margin-bottom: 0.5rem;
         color: inherit;
         font-size: 1rem;
     }
 
+    .check-icon {
+        width: 1.1rem;
+        height: 1.1rem;
+        animation: checkmark 0.3s ease-out;
+    }
+
+    @keyframes checkmark {
+        0% {
+            transform: scale(0);
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
     .preset-times {
         font-size: 0.875rem;
-        opacity: 0.8;
+        opacity: 0.9;
         color: inherit;
         font-weight: 500;
     }
@@ -604,7 +820,7 @@
         font-size: 1.1rem;
         font-weight: 600;
         text-align: center;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .custom-input:focus {
@@ -662,7 +878,7 @@
         border-radius: 0.5rem;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         text-decoration: none;
     }
 
@@ -678,6 +894,14 @@
 
     .btn-primary:hover:not(:disabled) {
         background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-primary:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .btn-outline {
@@ -688,6 +912,8 @@
 
     .btn-outline:hover:not(:disabled) {
         background: var(--surface-color);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
     .ambient-toggle.active {
@@ -704,6 +930,7 @@
     .icon {
         width: 1rem;
         height: 1rem;
+        stroke-width: 2.5;
     }
 
     @media (max-width: 768px) {

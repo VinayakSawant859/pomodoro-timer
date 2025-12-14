@@ -232,6 +232,28 @@
                                         >
                                             {task.text}
                                         </span>
+                                        {#if task.actual_pomodoros > 0}
+                                            <div class="task-effort">
+                                                <span class="effort-label"
+                                                    >Focus invested:</span
+                                                >
+                                                <div class="pomodoro-dots">
+                                                    {#each Array(Math.min(task.actual_pomodoros, 8)) as _, i}
+                                                        <span
+                                                            class="pom-dot"
+                                                            title={`${task.actual_pomodoros} Pomodoro${task.actual_pomodoros > 1 ? "s" : ""} completed`}
+                                                            >🍅</span
+                                                        >
+                                                    {/each}
+                                                    {#if task.actual_pomodoros > 8}
+                                                        <span class="pom-count"
+                                                            >+{task.actual_pomodoros -
+                                                                8}</span
+                                                        >
+                                                    {/if}
+                                                </div>
+                                            </div>
+                                        {/if}
                                         <span class="task-date"
                                             >{formatDate(task.created_at)}</span
                                         >
@@ -333,6 +355,30 @@
 
                                 <div class="task-text-wrapper">
                                     <span class="task-text">{task.text}</span>
+                                    {#if task.actual_pomodoros > 0}
+                                        <div
+                                            class="task-effort completed-effort"
+                                        >
+                                            <span class="effort-label"
+                                                >Invested:</span
+                                            >
+                                            <div class="pomodoro-dots">
+                                                {#each Array(Math.min(task.actual_pomodoros, 8)) as _, i}
+                                                    <span
+                                                        class="pom-dot"
+                                                        title={`${task.actual_pomodoros} Pomodoro${task.actual_pomodoros > 1 ? "s" : ""} completed`}
+                                                        >🍅</span
+                                                    >
+                                                {/each}
+                                                {#if task.actual_pomodoros > 8}
+                                                    <span class="pom-count"
+                                                        >+{task.actual_pomodoros -
+                                                            8}</span
+                                                    >
+                                                {/if}
+                                            </div>
+                                        </div>
+                                    {/if}
                                     {#if task.completed_at}
                                         <span class="task-date"
                                             >✓ {formatDate(
@@ -393,10 +439,13 @@
 <style>
     .task-manager {
         background: var(--surface-color);
-        border-radius: 1rem;
-        padding: 2rem;
-        box-shadow: 0 4px 6px -1px var(--shadow);
-        border: 1px solid var(--border-color);
+        border-radius: 1.25rem;
+        padding: 2.5rem;
+        box-shadow:
+            0 1px 3px rgba(0, 0, 0, 0.08),
+            0 4px 12px rgba(0, 0, 0, 0.05),
+            0 0 0 1px var(--border-color);
+        border: none;
     }
 
     h2 {
@@ -428,7 +477,7 @@
     .task-sections {
         display: flex;
         flex-direction: column;
-        gap: 2rem;
+        gap: 2.5rem;
     }
 
     .task-section h3 {
@@ -436,33 +485,65 @@
         color: var(--text-secondary);
         font-size: 1rem;
         font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        opacity: 0.8;
     }
 
     .task-list {
         list-style: none;
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
 
     .task-item {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 1rem;
+        padding: 1.25rem;
         background: var(--background-color);
         border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-        transition: all 0.2s ease;
+        border-radius: 0.75rem;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .task-item:hover {
         border-color: var(--primary-color);
+        box-shadow:
+            0 4px 12px rgba(0, 0, 0, 0.08),
+            0 2px 4px rgba(0, 0, 0, 0.04);
+        transform: translateY(-1px);
     }
 
     .task-item.current {
         border-color: var(--primary-color);
-        background: rgba(99, 102, 241, 0.05);
+        background: linear-gradient(
+            135deg,
+            rgba(99, 102, 241, 0.08),
+            rgba(99, 102, 241, 0.03)
+        );
+        box-shadow:
+            0 0 0 2px rgba(99, 102, 241, 0.12),
+            0 4px 16px rgba(99, 102, 241, 0.15),
+            0 2px 8px rgba(99, 102, 241, 0.1);
+        position: relative;
+    }
+
+    .task-item.current::before {
+        content: "⏱️ Working on this";
+        position: absolute;
+        top: -10px;
+        left: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        background: var(--background-color);
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.25rem;
+        border: 1px solid var(--primary-color);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .task-item.completed {
@@ -487,6 +568,13 @@
 
     .task-checkbox:hover {
         color: var(--primary-color);
+        transform: scale(1.1);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .task-checkbox:active {
+        transform: scale(0.95);
+        transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .task-checkbox.checked {
@@ -503,12 +591,69 @@
     .task-text {
         color: var(--text-color);
         cursor: pointer;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        line-height: 1.5;
+    }
+
+    .task-effort {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+    }
+
+    .effort-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        opacity: 0.75;
+    }
+
+    .pomodoro-dots {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .pom-dot {
+        font-size: 0.65rem;
+        opacity: 0.9;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        to {
+            opacity: 0.9;
+            transform: scale(1);
+        }
+    }
+
+    .pom-count {
+        font-size: 0.7rem;
+        color: var(--primary-color);
+        font-weight: 600;
+        background: var(--hover-bg);
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.25rem;
+    }
+
+    .completed-effort {
+        opacity: 0.7;
     }
 
     .task-date {
         font-size: 0.8rem;
         color: var(--text-secondary);
         font-weight: 500;
+        letter-spacing: 0.02em;
+        opacity: 0.8;
     }
 
     .completed .task-text {
@@ -540,7 +685,7 @@
         border-radius: 0.5rem;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .btn:hover:not(:disabled) {
@@ -565,6 +710,11 @@
         background: var(--primary-dark);
     }
 
+    .btn-primary:active:not(:disabled) {
+        transform: scale(0.97);
+        transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
     .btn-icon {
         background: none;
         border: none;
@@ -578,6 +728,8 @@
     .btn-icon:hover {
         background: var(--surface-color);
         color: var(--text-color);
+        transform: scale(1.05);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .btn-icon-danger:hover {
@@ -588,7 +740,7 @@
     .icon {
         width: 1rem;
         height: 1rem;
-        stroke-width: 2;
+        stroke-width: 2.5;
     }
 
     .empty-state {
