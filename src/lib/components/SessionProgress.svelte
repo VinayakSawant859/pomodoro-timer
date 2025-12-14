@@ -13,7 +13,7 @@
         // Access timer properties to create reactive dependency
         timer.isRunning;
         timer.sessionsCompleted;
-        
+
         // Reload today's sessions when timer state changes
         if (dailyHistory) {
             sessionHistory.loadToday();
@@ -94,12 +94,12 @@
 </script>
 
 <div class="session-progress">
-    <div 
-        class="progress-header" 
+    <div
+        class="progress-header"
         onclick={toggleExpanded}
         role="button"
         tabindex="0"
-        onkeydown={(e) => e.key === 'Enter' && toggleExpanded()}
+        onkeydown={(e) => e.key === "Enter" && toggleExpanded()}
     >
         <div class="progress-summary">
             <h3>Today's Sessions</h3>
@@ -141,8 +141,8 @@
                 </div>
             {/if}
         </div>
-        <button 
-            class="expand-btn" 
+        <button
+            class="expand-btn"
             class:expanded
             aria-label={expanded ? "Collapse sessions" : "Expand sessions"}
         >

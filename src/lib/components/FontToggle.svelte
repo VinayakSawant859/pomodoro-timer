@@ -46,7 +46,10 @@
 
     function handleToggle() {
         font.toggle();
-        toastStore.show(`Font changed to ${fontNames[font.current]}`, "success");
+        toastStore.show(
+            `Font changed to ${fontNames[font.current]}`,
+            "success",
+        );
     }
 
     function selectFont(
@@ -59,7 +62,10 @@
             | "poppins",
     ) {
         font.set(selectedFont);
-        toastStore.show(`Font changed to ${fontNames[selectedFont]}`, "success");
+        toastStore.show(
+            `Font changed to ${fontNames[selectedFont]}`,
+            "success",
+        );
         showDropdown = false;
         dropdownStore.close();
         if (hoverTimeout) {

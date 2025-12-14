@@ -386,11 +386,11 @@ export class ThemeState {
         // Cycle through: light -> dark -> academia -> sakura -> coffee -> forest -> flame -> anime -> light
         const newTheme: ThemeType = this.current === 'light' ? 'dark' :
             this.current === 'dark' ? 'academia' :
-            this.current === 'academia' ? 'sakura' :
-            this.current === 'sakura' ? 'coffee' :
-            this.current === 'coffee' ? 'forest' :
-            this.current === 'forest' ? 'flame' :
-            this.current === 'flame' ? 'anime' : 'light';
+                this.current === 'academia' ? 'sakura' :
+                    this.current === 'sakura' ? 'coffee' :
+                        this.current === 'coffee' ? 'forest' :
+                            this.current === 'forest' ? 'flame' :
+                                this.current === 'flame' ? 'anime' : 'light';
 
         this.set(newTheme);
     }
@@ -424,9 +424,9 @@ export class FontState {
         // Cycle through: default -> josefin -> cause -> cabin -> inconsolata -> poppins -> default
         const newFont: FontType = this.current === 'default' ? 'josefin' :
             this.current === 'josefin' ? 'cause' :
-            this.current === 'cause' ? 'cabin' :
-            this.current === 'cabin' ? 'inconsolata' :
-            this.current === 'inconsolata' ? 'poppins' : 'default';
+                this.current === 'cause' ? 'cabin' :
+                    this.current === 'cabin' ? 'inconsolata' :
+                        this.current === 'inconsolata' ? 'poppins' : 'default';
 
         this.set(newFont);
     }

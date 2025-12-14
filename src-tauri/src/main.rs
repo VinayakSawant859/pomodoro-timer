@@ -1,12 +1,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod audio;
+
 use tauri::Manager;
 use std::fs;
 use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use rusqlite::Connection;
-use rodio::{Decoder, OutputStream, Sink};
-use std::io::Cursor;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Task {
@@ -577,125 +577,19 @@ async fn save_settings(
     Ok(())
 }
 
-// Audio functions
-#[tauri::command]
-async fn play_sound(sound_name: String, app_handle: tauri::AppHandle) -> Result<(), String> {
-    tokio::spawn(async move {
-        if let Err(e) = play_sound_file(sound_name, app_handle).await {
-            eprintln!("Failed to play sound: {}", e);
-        }
-    });
-    Ok(())
-}
-
-async fn play_sound_file(sound_name: String, app_handle: tauri::AppHandle) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let (_stream, stream_handle) = OutputStream::try_default()?;
-    let sink = Sink::try_new(&stream_handle)?;
-    
-    // Determine file extension (default to .wav if not specified)
-    let file_name = if sound_name.contains('.') {
-        sound_name.clone()
-    } else {
-        format!("{}.wav", sound_name)
-    };
-    
-    // Try multiple paths to find the audio file
-    let mut audio_file_path: Option<PathBuf> = None;
-    
-    // Try 1: Resource directory root (production)
-    if let Ok(resource_path) = app_handle.path().resource_dir() {
-        let path = resource_path.join(&file_name);
-        println!("Trying resource path: {:?}, exists: {}", path, path.exists());
-        if path.exists() {
-            audio_file_path = Some(path);
-        }
-        
-        // Try 1b: Resource directory with _up_/static subdirectory (production)
-        if audio_file_path.is_none() {
-            let path = resource_path.join("_up_").join("static").join(&file_name);
-            println!("Trying resource _up_/static path: {:?}, exists: {}", path, path.exists());
-            if path.exists() {
-                audio_file_path = Some(path);
-            }
-        }
-    }
-    
-    // Try 2: Static folder in project root (development)
-    if audio_file_path.is_none() {
-        if let Ok(current_dir) = std::env::current_dir() {
-            let path = current_dir.join("..").join("static").join(&file_name);
-            println!("Trying dev path: {:?}, exists: {}", path, path.exists());
-            if path.exists() {
-                audio_file_path = Some(path);
-            }
-        }
-    }
-    
-    // Try to read and decode the audio file
-    if let Some(path) = audio_file_path {
-        println!("Playing audio from: {:?}", path);
-        if let Ok(file) = std::fs::File::open(&path) {
-            let source = Decoder::new(std::io::BufReader::new(file))?;
-            sink.append(source);
-            sink.sleep_until_end();
-        } else {
-            eprintln!("Failed to open audio file: {:?}", path);
-        }
-    } else {
-        eprintln!("Audio file not found: {}", file_name);
-    }
-    
-    Ok(())
-}
-
-#[tauri::command]
-async fn play_notification_sound(sound_type: String) -> Result<(), String> {
-    tokio::spawn(async move {
-        if let Err(e) = play_sound_internal(sound_type).await {
-            eprintln!("Failed to play sound: {}", e);
-        }
-    });
-    Ok(())
-}
-
-async fn play_sound_internal(sound_type: String) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let (_stream, stream_handle) = OutputStream::try_default()?;
-    let sink = Sink::try_new(&stream_handle)?;
-    
-    // Generate simple beep sounds
-    let sound_data = match sound_type.as_str() {
-        "work_complete" => generate_work_complete_sound(),
-        "break_complete" => generate_break_complete_sound(),
-        "tick" => generate_tick_sound(),
-        _ => generate_tick_sound(),
-    };
-    
-    let cursor = Cursor::new(sound_data);
-    let source = Decoder::new(cursor)?;
-    sink.append(source);
-    
-    sink.sleep_until_end();
-    Ok(())
-}
-
-// Simple sound generation functions (placeholder - you would implement actual sound generation)
-fn generate_work_complete_sound() -> Vec<u8> {
-    // This is a placeholder - in a real app, you'd generate or load actual audio data
-    vec![0; 1000] // Placeholder empty audio data
-}
-
-fn generate_break_complete_sound() -> Vec<u8> {
-    vec![0; 1000] // Placeholder empty audio data
-}
-
-fn generate_tick_sound() -> Vec<u8> {
-    vec![0; 100] // Placeholder empty audio data
-}
-
 fn main() {
+    // Initialize audio stream BEFORE building the Tauri app
+    // This must be kept alive for the duration of the application
+    let (_audio_stream, audio_handle) = audio::AudioStream::new()
+        .expect("Failed to initialize audio system");
+    
+    // Create the audio state that will be managed by Tauri
+    let audio_state = audio::AudioState::new(audio_handle);
+    
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
+        .manage(audio_state) // Register audio state for use in commands
         .invoke_handler(tauri::generate_handler![
             add_task,
             get_tasks,
@@ -709,8 +603,12 @@ fn main() {
             export_data,
             get_settings,
             save_settings,
-            play_notification_sound,
-            play_sound
+            audio::play_sound,
+            audio::play_notification_sound,
+            audio::set_white_noise,
+            audio::get_white_noise_volume,
+            audio::set_white_noise_volume,
+            audio::is_white_noise_playing
         ])
         .setup(|app| {
             // Initialize database on app startup

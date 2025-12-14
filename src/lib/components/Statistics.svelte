@@ -245,8 +245,9 @@
                         <div class="card-icon">⏱️</div>
                         <div class="card-content">
                             <div class="card-value">
-                                {Math.floor(stats.dailyStats.total_work_time / 60)}h {stats.dailyStats.total_work_time %
-                                    60}m
+                                {Math.floor(
+                                    stats.dailyStats.total_work_time / 60,
+                                )}h {stats.dailyStats.total_work_time % 60}m
                             </div>
                             <div class="card-label">Work Time</div>
                         </div>

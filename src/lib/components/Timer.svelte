@@ -18,9 +18,7 @@
     // No props needed
 
     // UI state management using $derived with new state
-    const isTimerRunning = $derived(
-        timer.isRunning || timer.isPaused,
-    );
+    const isTimerRunning = $derived(timer.isRunning || timer.isPaused);
     const showSessionControls = $derived(!isTimerRunning);
 
     const timeDisplay = $derived(formatTime(timer.timeRemaining));
@@ -28,8 +26,7 @@
         timer.currentSession.type === "work" ? "Work Time" : "Break Time",
     );
     const progressPercentage = $derived(
-        ((timer.currentSession.duration * 60 -
-            timer.timeRemaining) /
+        ((timer.currentSession.duration * 60 - timer.timeRemaining) /
             (timer.currentSession.duration * 60)) *
             100,
     );
@@ -166,9 +163,8 @@
                 <div class="session-type">{sessionTypeDisplay}</div>
                 <div class="time">{timeDisplay}</div>
                 <div class="session-info">
-                    Session {timer.sessionNumber} • {timer
-                        .currentSession.duration}min {timer.currentSession
-                        .type === "work"
+                    Session {timer.sessionNumber} • {timer.currentSession
+                        .duration}min {timer.currentSession.type === "work"
                         ? "work"
                         : "break"}
                 </div>

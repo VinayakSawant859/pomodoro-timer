@@ -7,7 +7,7 @@
     interface Props {
         onStartTask?: () => void;
     }
-    
+
     let { onStartTask }: Props = $props();
 
     let newTaskText = $state("");
@@ -16,8 +16,12 @@
     let showStats = $state(false);
 
     // Use $derived to compute filtered tasks
-    const incompleteTasks = $derived(tasks.tasks.filter((task) => !task.completed));
-    const completedTasks = $derived(tasks.tasks.filter((task) => task.completed));
+    const incompleteTasks = $derived(
+        tasks.tasks.filter((task) => !task.completed),
+    );
+    const completedTasks = $derived(
+        tasks.tasks.filter((task) => task.completed),
+    );
 
     // Format date as dd/mm
     function formatDate(dateString: string): string {
@@ -169,13 +173,14 @@
                 <div class="stat-item">
                     <span class="stat-label">⏱️ Work Time:</span>
                     <span class="stat-value"
-                        >{Math.floor(stats.dailyStats.total_work_time / 60)}h {stats.dailyStats.total_work_time %
-                            60}m</span
+                        >{Math.floor(stats.dailyStats.total_work_time / 60)}h {stats
+                            .dailyStats.total_work_time % 60}m</span
                     >
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">✅ Tasks Done:</span>
-                    <span class="stat-value">{stats.dailyStats.tasks_completed}</span
+                    <span class="stat-value"
+                        >{stats.dailyStats.tasks_completed}</span
                     >
                 </div>
             </div>
@@ -191,8 +196,7 @@
                     {#each incompleteTasks as task (task.id)}
                         <li
                             class="task-item"
-                            class:current={timer.currentTaskId ===
-                                task.id}
+                            class:current={timer.currentTaskId === task.id}
                         >
                             <div class="task-content">
                                 <div
