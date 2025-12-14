@@ -7,7 +7,7 @@ use database::AppSettings;
 use std::fs;
 use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Manager, AppHandle, Emitter,
+    Manager, AppHandle,
 };
 use tauri::menu::{MenuBuilder, MenuItemBuilder};
 
@@ -119,11 +119,10 @@ fn main() {
                 .items(&[&show_item, &quit_item])
                 .build()?;
 
-            let _tray = TrayIconBuilder::new()
+            let _tray = TrayIconBuilder::with_id("main-tray")
                 .menu(&menu)
                 .icon(app.default_window_icon().unwrap().clone())
                 .tooltip("Pomodoro Timer")
-                .icon_id("main-tray")
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "show" => {
                         if let Some(window) = app.get_webview_window("main") {

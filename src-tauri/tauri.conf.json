@@ -60,9 +60,6 @@
         },
         "updater": {
             "active": true
-        },
-        "notification": {
-            "all": true
         }
     },
     "app": {
