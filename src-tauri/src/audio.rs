@@ -1,8 +1,8 @@
-use rodio::{Decoder, OutputStream, OutputStreamHandle, Sink};
+use rodio::{Decoder, OutputStream, OutputStreamHandle, Sink, Source};
 use std::io::Cursor;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 /// Audio state that holds the persistent audio stream handle and background sink
 /// 
