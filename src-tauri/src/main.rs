@@ -5,7 +5,29 @@ mod database;
 
 use database::AppSettings;
 use std::fs;
-use tauri::Manager;
+use tauri::{
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    Manager, AppHandle, Emitter,
+};
+use tauri::menu::{MenuBuilder, MenuItemBuilder};
+
+#[tauri::command]
+async fn update_status(app: AppHandle, text: String) -> Result<(), String> {
+    // Update window title
+    if let Some(window) = app.get_webview_window("main") {
+        window
+            .set_title(&text)
+            .map_err(|e| format!("Failed to set window title: {}", e))?;
+    }
+
+    // Update tray tooltip
+    if let Some(tray) = app.tray_by_id("main-tray") {
+        tray.set_tooltip(Some(&text))
+            .map_err(|e| format!("Failed to set tray tooltip: {}", e))?;
+    }
+
+    Ok(())
+}
 
 #[tauri::command]
 async fn get_settings(app: tauri::AppHandle) -> Result<AppSettings, String> {
@@ -57,6 +79,7 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_notification::init())
         .manage(audio_state)
         .invoke_handler(tauri::generate_handler![
             database::add_task,
@@ -72,6 +95,7 @@ fn main() {
             database::export_data,
             get_settings,
             save_settings,
+            update_status,
             audio::play_sound,
             audio::play_notification_sound,
             audio::set_white_noise,
@@ -84,6 +108,55 @@ fn main() {
                 .map_err(|e| format!("Failed to initialize database: {}", e))?;
             
             app.manage(db_pool);
+
+            // Setup system tray
+            let show_item = MenuItemBuilder::with_id("show", "Show")
+                .build(app)?;
+            let quit_item = MenuItemBuilder::with_id("quit", "Quit")
+                .build(app)?;
+
+            let menu = MenuBuilder::new(app)
+                .items(&[&show_item, &quit_item])
+                .build()?;
+
+            let _tray = TrayIconBuilder::new()
+                .menu(&menu)
+                .icon(app.default_window_icon().unwrap().clone())
+                .tooltip("Pomodoro Timer")
+                .icon_id("main-tray")
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "show" => {
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+                    }
+                    "quit" => {
+                        app.exit(0);
+                    }
+                    _ => {}
+                })
+                .on_tray_icon_event(|tray, event| {
+                    if let TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } = event
+                    {
+                        let app = tray.app_handle();
+                        if let Some(window) = app.get_webview_window("main") {
+                            if window.is_visible().unwrap_or(false) {
+                                let _ = window.hide();
+                            } else {
+                                let _ = window.show();
+                                let _ = window.set_focus();
+                            }
+                        }
+                    }
+                })
+                .build(app)?;
+
+            app.manage(_tray);
             
             Ok(())
         })

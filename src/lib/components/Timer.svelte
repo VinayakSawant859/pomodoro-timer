@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
     import { timer, audio } from "$lib/state.svelte";
+    import { updateStatus, showNotification, formatTimerTitle } from "$lib/native";
 
     let interval: number;
 
@@ -100,10 +101,27 @@
             interval = setInterval(async () => {
                 timer.tick();
 
+                // Update window title and tray tooltip every second
+                const mins = Math.floor(timer.timeRemaining / 60);
+                const secs = timer.timeRemaining % 60;
+                const sessionType = timer.currentSession.type === "work" ? "Focus" : "Break";
+                const titleText = formatTimerTitle(mins, secs, sessionType);
+                await updateStatus(titleText);
+
                 // Check if session is complete
                 if (timer.timeRemaining <= 0) {
                     clearInterval(interval);
                     interval = undefined as any;
+
+                    // Show native notification
+                    const notifTitle = timer.currentSession.type === "work" 
+                        ? "🎉 Work Session Complete!" 
+                        : "✨ Break Complete!";
+                    const notifBody = timer.currentSession.type === "work"
+                        ? "Great work! Time for a well-deserved break."
+                        : "Break's over. Ready to focus again?";
+                    await showNotification(notifTitle, notifBody);
+
                     // Play appropriate complete sound based on session type
                     if (
                         timer.currentSession.type === "break" &&
@@ -114,12 +132,17 @@
                         audio.playComplete();
                     }
                     await timer.completeSession(false); // false = not interrupted
+
+                    // Reset title to default
+                    await updateStatus("Pomodoro Timer");
                 }
             }, 1000);
         } else if (!timer.isRunning && interval) {
             console.log("Timer stopped, clearing interval...");
             clearInterval(interval);
             interval = undefined as any;
+            // Reset title when timer stops
+            updateStatus("Pomodoro Timer");
         }
     });
 </script>
