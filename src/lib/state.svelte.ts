@@ -473,8 +473,29 @@ export class FontState {
 
 // ============= Statistics State Class =============
 
+export interface HeatmapPoint {
+    date: string;
+    count: number;
+    level: number;
+}
+
 export class StatsState {
     dailyStats = $state<DailyStats | null>(null);
+    heatmap = $state<HeatmapPoint[]>([]);
+
+    async loadHeatmap(days: number = 365): Promise<HeatmapPoint[]> {
+        try {
+            console.log('Loading focus heatmap for', days, 'days');
+            const heatmapData = await invoke<HeatmapPoint[]>('get_focus_heatmap', { days });
+            console.log('Heatmap loaded:', heatmapData.length, 'data points');
+            this.heatmap = heatmapData;
+            return heatmapData;
+        } catch (error) {
+            console.error('Failed to load heatmap:', error);
+            this.heatmap = [];
+            return [];
+        }
+    }
 
     async loadDaily(date: string): Promise<DailyStats> {
         try {

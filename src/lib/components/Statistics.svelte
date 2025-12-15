@@ -16,6 +16,39 @@
 
     let weeklyData: any[] = [];
     let showDetails = $state(false);
+    let showHeatmap = $state(true);
+
+    // Peak Hour Calculation
+    const peakHour = $derived(() => {
+        const sessions = sessionHistory.history?.sessions || [];
+        if (sessions.length === 0) return "N/A";
+
+        // Count sessions by hour of day
+        const hourCounts: { [key: number]: number } = {};
+        sessions.forEach((session) => {
+            if (session.type === "work" && session.started_at) {
+                const hour = new Date(session.started_at).getHours();
+                hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+            }
+        });
+
+        if (Object.keys(hourCounts).length === 0) return "N/A";
+
+        // Find the hour with most sessions
+        let maxHour = 0;
+        let maxCount = 0;
+        for (const [hour, count] of Object.entries(hourCounts)) {
+            if (count > maxCount) {
+                maxCount = count;
+                maxHour = parseInt(hour);
+            }
+        }
+
+        // Format hour (12-hour format)
+        const period = maxHour >= 12 ? "PM" : "AM";
+        const displayHour = maxHour % 12 || 12;
+        return `${displayHour} ${period}`;
+    });
 
     // Derived insights for calm reflection
     const focusQuality = $derived(() => {
@@ -42,6 +75,9 @@
         // Load today's data
         await stats.loadToday();
         await sessionHistory.loadToday();
+
+        // Load heatmap data (last 365 days)
+        await stats.loadHeatmap(365);
 
         // Load weekly data
         await loadWeeklyData();
@@ -293,6 +329,56 @@
                             <div class="card-label">Tasks Completed</div>
                         </div>
                     </div>
+                </div>
+            {/if}
+
+            <!-- Peak Hour Insight -->
+            {#if peakHour() !== "N/A"}
+                <div class="insight-card">
+                    <div class="insight-icon">🌟</div>
+                    <div class="insight-content">
+                        <div class="insight-label">Peak Focus Hour</div>
+                        <div class="insight-value">{peakHour()}</div>
+                        <div class="insight-description">
+                            You're most productive during this time
+                        </div>
+                    </div>
+                </div>
+            {/if}
+
+            <!-- Consistency Heatmap -->
+            {#if stats.heatmap.length > 0}
+                <div class="heatmap-section">
+                    <div class="section-header">
+                        <h3>🔥 Consistency Streak</h3>
+                        <button
+                            class="toggle-compact-btn"
+                            onclick={() => (showHeatmap = !showHeatmap)}
+                        >
+                            {showHeatmap ? "Hide" : "Show"}
+                        </button>
+                    </div>
+                    {#if showHeatmap}
+                        <div class="heatmap-container">
+                            <div class="heatmap-grid">
+                                {#each stats.heatmap as day}
+                                    <div
+                                        class="heatmap-cell level-{day.level}"
+                                        title="{day.date}: {day.count} {day.count === 1 ? 'session' : 'sessions'}"
+                                    ></div>
+                                {/each}
+                            </div>
+                            <div class="heatmap-legend">
+                                <span class="legend-label">Less</span>
+                                <div class="legend-cell level-0"></div>
+                                <div class="legend-cell level-1"></div>
+                                <div class="legend-cell level-2"></div>
+                                <div class="legend-cell level-3"></div>
+                                <div class="legend-cell level-4"></div>
+                                <span class="legend-label">More</span>
+                            </div>
+                        </div>
+                    {/if}
                 </div>
             {/if}
 
@@ -571,6 +657,167 @@
         }
     }
 
+    /* Peak Hour Insight */
+    .insight-card {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.5rem 2rem;
+        background: linear-gradient(
+            135deg,
+            rgba(245, 158, 11, 0.08),
+            rgba(251, 191, 36, 0.08)
+        );
+        border: 2px solid rgba(245, 158, 11, 0.2);
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .insight-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(245, 158, 11, 0.12);
+        border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    .insight-icon {
+        font-size: 2.5rem;
+        line-height: 1;
+    }
+
+    .insight-content {
+        flex: 1;
+    }
+
+    .insight-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+
+    .insight-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: rgb(245, 158, 11);
+        margin-bottom: 0.25rem;
+    }
+
+    .insight-description {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        opacity: 0.85;
+    }
+
+    /* Heatmap Section */
+    .heatmap-section {
+        margin: 2rem 0;
+        padding: 2rem;
+        background: var(--background-color);
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: var(--text-color);
+    }
+
+    .toggle-compact-btn {
+        padding: 0.5rem 1rem;
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        color: var(--text-color);
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .toggle-compact-btn:hover {
+        background: var(--hover-bg);
+        border-color: var(--primary-color);
+    }
+
+    .heatmap-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .heatmap-grid {
+        display: grid;
+        grid-template-columns: repeat(53, 1fr);
+        grid-auto-rows: 14px;
+        gap: 3px;
+        padding: 0.5rem;
+        overflow-x: auto;
+    }
+
+    .heatmap-cell {
+        border-radius: 3px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        min-width: 14px;
+    }
+
+    .heatmap-cell:hover {
+        transform: scale(1.3);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        z-index: 10;
+    }
+
+    .heatmap-cell.level-0 {
+        background: var(--border-color);
+    }
+
+    .heatmap-cell.level-1 {
+        background: rgba(99, 102, 241, 0.2);
+    }
+
+    .heatmap-cell.level-2 {
+        background: rgba(99, 102, 241, 0.4);
+    }
+
+    .heatmap-cell.level-3 {
+        background: rgba(99, 102, 241, 0.6);
+    }
+
+    .heatmap-cell.level-4 {
+        background: rgba(99, 102, 241, 0.9);
+    }
+
+    .heatmap-legend {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    .legend-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .legend-cell {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+    }
+
     @media (max-width: 768px) {
         .stats-modal {
             max-height: 95vh;
@@ -594,6 +841,22 @@
 
         .chart-wrapper {
             height: 300px;
+        }
+
+        .heatmap-grid {
+            grid-template-columns: repeat(26, 1fr);
+            gap: 2px;
+        }
+
+        .heatmap-cell {
+            min-width: 12px;
+            grid-auto-rows: 12px;
+        }
+
+        .insight-card {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
         }
     }
 </style>
