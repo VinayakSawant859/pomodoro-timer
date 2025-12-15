@@ -364,7 +364,10 @@
                                 {#each stats.heatmap as day}
                                     <div
                                         class="heatmap-cell level-{day.level}"
-                                        title="{day.date}: {day.count} {day.count === 1 ? 'session' : 'sessions'}"
+                                        title="{day.date}: {day.count} {day.count ===
+                                        1
+                                            ? 'session'
+                                            : 'sessions'}"
                                     ></div>
                                 {/each}
                             </div>

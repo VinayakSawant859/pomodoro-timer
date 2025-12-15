@@ -152,7 +152,9 @@
                 class:active={font.current === "montserrat"}
                 onclick={() => selectFont("montserrat")}
             >
-                <span style="font-family: 'Montserrat', sans-serif;">Montserrat</span>
+                <span style="font-family: 'Montserrat', sans-serif;"
+                    >Montserrat</span
+                >
             </button>
             <button
                 class="font-option"

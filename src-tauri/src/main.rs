@@ -5,12 +5,17 @@ mod database;
 
 use database::AppSettings;
 use std::fs;
+use std::fs::File;
+use std::io::Read;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Manager, AppHandle,
 };
 use tauri::menu::{MenuBuilder, MenuItemBuilder};
+use url::Url;
+use percent_encoding::percent_decode_str;
 
 // Monk Mode state
 #[derive(Default)]
@@ -117,6 +122,51 @@ async fn save_settings(app: tauri::AppHandle, settings: AppSettings) -> Result<(
     Ok(())
 }
 
+fn handle_video_stream(request: tauri::http::Request<Vec<u8>>) -> Result<tauri::http::Response<Vec<u8>>, String> {
+    // Parse the URL to get the file path
+    let url_str = request.uri().to_string();
+    let url = Url::parse(&url_str)
+        .map_err(|e| format!("Failed to parse URL: {}", e))?;
+    
+    let path_encoded = url.path().trim_start_matches('/');
+    let path_decoded = percent_decode_str(path_encoded)
+        .decode_utf8()
+        .map_err(|e| format!("Failed to decode path: {}", e))?;
+    
+    let file_path = PathBuf::from(path_decoded.to_string());
+    
+    // Security check: ensure file exists and is readable
+    if !file_path.exists() {
+        return Err(format!("File not found: {:?}", file_path));
+    }
+    
+    // Open and read the file
+    let mut file = File::open(&file_path)
+        .map_err(|e| format!("Failed to open file: {}", e))?;
+    
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer)
+        .map_err(|e| format!("Failed to read file: {}", e))?;
+    
+    // Detect MIME type from file extension
+    let mime_type = match file_path.extension().and_then(|s| s.to_str()) {
+        Some("mp4") => "video/mp4",
+        Some("webm") => "video/webm",
+        Some("mov") => "video/quicktime",
+        Some("avi") => "video/x-msvideo",
+        Some("mkv") => "video/x-matroska",
+        _ => "video/mp4", // default fallback
+    };
+    
+    // Return the response
+    tauri::http::Response::builder()
+        .header("Access-Control-Allow-Origin", "*")
+        .header("Content-Type", mime_type)
+        .status(200)
+        .body(buffer)
+        .map_err(|e| format!("Failed to build response: {}", e))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 fn main() {
     let (_audio_stream, audio_handle) = audio::AudioStream::new()
@@ -128,7 +178,25 @@ fn main() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_store::Builder::default().build())
         .manage(audio_state)
+        .register_asynchronous_uri_scheme_protocol("videostream", |_app, request, responder| {
+            tauri::async_runtime::spawn(async move {
+                match handle_video_stream(request) {
+                    Ok(response) => responder.respond(response),
+                    Err(e) => {
+                        eprintln!("Video stream error: {}", e);
+                        responder.respond(
+                            tauri::http::Response::builder()
+                                .status(404)
+                                .body(Vec::new())
+                                .unwrap()
+                        )
+                    }
+                }
+            });
+        })
         .invoke_handler(tauri::generate_handler![
             database::add_task,
             database::get_tasks,

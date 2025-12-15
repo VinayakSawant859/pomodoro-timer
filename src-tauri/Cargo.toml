@@ -20,6 +20,10 @@ tauri = { version = "2.0", features = ["tray-icon"] }
 tauri-plugin-shell = "2.0"
 tauri-plugin-fs = "2.0"
 tauri-plugin-notification = "2.0"
+tauri-plugin-dialog = "2.0"
+tauri-plugin-store = "2.0"
+url = "2.5"
+percent-encoding = "2.3"
 rusqlite = { version = "0.31", features = ["bundled"] }
 r2d2 = "0.8"
 r2d2_sqlite = "0.24"

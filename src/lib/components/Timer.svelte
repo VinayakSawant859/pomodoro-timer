@@ -22,6 +22,13 @@
     let customWork = $state(25);
     let customBreak = $state(5);
 
+    // Computed video URL for videostream protocol
+    const zenVideoUrl = $derived(() => {
+        if (!timer.zenVideoPath) return null;
+        // URL encode the path for the custom protocol
+        return `videostream://${encodeURIComponent(timer.zenVideoPath)}`;
+    });
+
     // No props needed
 
     // UI state management using $derived with new state
@@ -217,7 +224,19 @@
     });
 </script>
 
-<div class="timer-container">
+<!-- Zen Mode Background Video -->
+{#if timer.monkMode && zenVideoUrl()}
+    <video
+        class="zen-background-video"
+        autoplay
+        loop
+        muted
+        playsinline
+        src={zenVideoUrl()}
+    ></video>
+{/if}
+
+<div class="timer-container" class:zen-mode={timer.monkMode}>
     <svg width="0" height="0">
         <defs>
             <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -480,6 +499,64 @@
                         </svg>
                         Apply Custom Session
                     </button>
+                </div>
+            </div>
+
+            <!-- Zen Mode Video Selection -->
+            <div class="zen-video-section">
+                <h4>🎬 Zen Mode Background</h4>
+                <div class="zen-video-controls">
+                    {#if timer.zenVideoPath}
+                        <div class="video-info">
+                            <svg
+                                class="icon"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    d="M23 7l-7 5 7 5V7z M1 5h14v14H1z"
+                                ></path>
+                            </svg>
+                            <span class="video-name"
+                                >{timer.zenVideoPath.split(/[/\\]/).pop()}</span
+                            >
+                        </div>
+                        <div class="video-actions">
+                            <button
+                                class="btn-secondary btn-sm"
+                                onclick={() => timer.selectZenVideo()}
+                                title="Change zen mode background video"
+                            >
+                                Change
+                            </button>
+                            <button
+                                class="btn-danger btn-sm"
+                                onclick={() => timer.clearZenVideo()}
+                                title="Remove zen mode background video"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    {:else}
+                        <button
+                            class="btn-zen-video"
+                            onclick={() => timer.selectZenVideo()}
+                            title="Select a video to play in the background during Zen Mode"
+                        >
+                            <svg
+                                class="icon"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    d="M23 7l-7 5 7 5V7z M1 5h14v14H1z"
+                                ></path>
+                            </svg>
+                            Select Zen Background Video
+                        </button>
+                    {/if}
                 </div>
             </div>
         </div>
@@ -956,5 +1033,144 @@
         .input-group input {
             width: 100%;
         }
+    }
+
+    /* Zen Mode Background Video */
+    .zen-background-video {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        z-index: -1;
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .timer-container.zen-mode {
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(2px);
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Zen Video Section */
+    .zen-video-section {
+        margin-top: 2rem;
+        padding: 2rem;
+        background: linear-gradient(
+            135deg,
+            rgba(139, 92, 246, 0.05),
+            rgba(99, 102, 241, 0.05)
+        );
+        border: 2px solid rgba(139, 92, 246, 0.2);
+        border-radius: 1rem;
+    }
+
+    .zen-video-section h4 {
+        margin: 0 0 1rem 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .zen-video-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .video-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        background: var(--background-color);
+        border-radius: 0.5rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .video-info .icon {
+        width: 1.25rem;
+        height: 1.25rem;
+        color: var(--primary-color);
+        flex-shrink: 0;
+    }
+
+    .video-name {
+        flex: 1;
+        font-size: 0.875rem;
+        color: var(--text-color);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .video-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-zen-video {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(
+            135deg,
+            rgba(139, 92, 246, 0.08),
+            rgba(99, 102, 241, 0.08)
+        );
+        border: 2px dashed rgba(139, 92, 246, 0.3);
+        border-radius: 0.75rem;
+        color: var(--text-color);
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-zen-video:hover {
+        background: linear-gradient(
+            135deg,
+            rgba(139, 92, 246, 0.12),
+            rgba(99, 102, 241, 0.12)
+        );
+        border-color: rgba(139, 92, 246, 0.5);
+        transform: translateY(-2px);
+    }
+
+    .btn-zen-video .icon {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .btn-secondary {
+        background: var(--surface-color);
+        border: 2px solid var(--border-color);
+        color: var(--text-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--hover-bg);
+        border-color: var(--primary-color);
+    }
+
+    .btn-danger {
+        background: rgba(239, 68, 68, 0.1);
+        border: 2px solid rgba(239, 68, 68, 0.3);
+        color: rgb(239, 68, 68);
+    }
+
+    .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: rgba(239, 68, 68, 0.5);
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
     }
 </style>
