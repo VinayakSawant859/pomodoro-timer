@@ -398,40 +398,6 @@
         />
     {/if}
 
-    <!-- Monk Mode Toggle -->
-    <div class="monk-mode-section">
-        <button
-            class="btn btn-monk-mode"
-            class:active={timer.monkMode}
-            onclick={() => timer.toggleMonkMode()}
-            title={timer.monkMode
-                ? "Exit Monk Mode - Show all controls and customization options"
-                : "Enter Monk Mode 🧘 - Minimize distractions, focus on the essentials"}
-        >
-            <svg
-                class="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-            >
-                {#if timer.monkMode}
-                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-                    <line x1="6" y1="1" x2="6" y2="4"></line>
-                    <line x1="10" y1="1" x2="10" y2="4"></line>
-                    <line x1="14" y1="1" x2="14" y2="4"></line>
-                {:else}
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path
-                        d="M12 1v6m0 6v6m8.66-14.66l-4.24 4.24m-4.24 4.24l-4.24 4.24m16.24 0l-4.24-4.24m-4.24-4.24l-4.24-4.24"
-                    ></path>
-                {/if}
-            </svg>
-            {timer.monkMode ? "Exit Monk Mode" : "Enter Monk Mode 🧘"}
-        </button>
-    </div>
-
     {#if !isTimerRunning && !timer.monkMode}
         <div class="session-presets">
             <h3>Session Presets</h3>
@@ -531,62 +497,6 @@
             0 0 0 1px var(--border-color);
         border: none;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    /* Monk Mode Section */
-    .monk-mode-section {
-        margin-top: 1.5rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid var(--border-color);
-    }
-
-    .btn-monk-mode {
-        width: 100%;
-        padding: 1rem 1.5rem;
-        background: linear-gradient(
-            135deg,
-            rgba(139, 92, 246, 0.05),
-            rgba(99, 102, 241, 0.05)
-        );
-        border: 2px solid rgba(139, 92, 246, 0.2);
-        border-radius: 0.75rem;
-        color: var(--text-color);
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .btn-monk-mode:hover {
-        background: linear-gradient(
-            135deg,
-            rgba(139, 92, 246, 0.1),
-            rgba(99, 102, 241, 0.1)
-        );
-        border-color: rgba(139, 92, 246, 0.4);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
-    }
-
-    .btn-monk-mode.active {
-        background: linear-gradient(
-            135deg,
-            rgba(139, 92, 246, 0.15),
-            rgba(99, 102, 241, 0.15)
-        );
-        border-color: rgba(139, 92, 246, 0.6);
-        box-shadow:
-            0 0 0 4px rgba(139, 92, 246, 0.1),
-            0 4px 12px rgba(139, 92, 246, 0.3);
-    }
-
-    .btn-monk-mode .icon {
-        width: 1.25rem;
-        height: 1.25rem;
     }
 
     .timer-display {
