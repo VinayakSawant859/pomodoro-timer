@@ -42,6 +42,8 @@
         cabin: "Cabin Sketch",
         inconsolata: "Inconsolata",
         poppins: "Poppins",
+        montserrat: "Montserrat",
+        frijole: "Frijole",
     };
 
     function handleToggle() {
@@ -59,7 +61,9 @@
             | "cause"
             | "cabin"
             | "inconsolata"
-            | "poppins",
+            | "poppins"
+            | "montserrat"
+            | "frijole",
     ) {
         font.set(selectedFont);
         toastStore.show(
@@ -142,6 +146,20 @@
                 onclick={() => selectFont("poppins")}
             >
                 <span style="font-family: 'Poppins', sans-serif;">Poppins</span>
+            </button>
+            <button
+                class="font-option"
+                class:active={font.current === "montserrat"}
+                onclick={() => selectFont("montserrat")}
+            >
+                <span style="font-family: 'Montserrat', sans-serif;">Montserrat</span>
+            </button>
+            <button
+                class="font-option"
+                class:active={font.current === "frijole"}
+                onclick={() => selectFont("frijole")}
+            >
+                <span style="font-family: 'Frijole', system-ui;">Frijole</span>
             </button>
         </div>
     {/if}

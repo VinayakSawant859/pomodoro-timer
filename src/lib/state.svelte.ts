@@ -435,18 +435,20 @@ export class ThemeState {
 
 // ============= Font State Class =============
 
-type FontType = 'default' | 'josefin' | 'cause' | 'cabin' | 'inconsolata' | 'poppins';
+type FontType = 'default' | 'josefin' | 'cause' | 'cabin' | 'inconsolata' | 'poppins' | 'montserrat' | 'frijole';
 
 export class FontState {
     current = $state<FontType>('default');
 
     toggle() {
-        // Cycle through: default -> josefin -> cause -> cabin -> inconsolata -> poppins -> default
+        // Cycle through: default -> josefin -> cause -> cabin -> inconsolata -> poppins -> montserrat -> frijole -> default
         const newFont: FontType = this.current === 'default' ? 'josefin' :
             this.current === 'josefin' ? 'cause' :
                 this.current === 'cause' ? 'cabin' :
                     this.current === 'cabin' ? 'inconsolata' :
-                        this.current === 'inconsolata' ? 'poppins' : 'default';
+                        this.current === 'inconsolata' ? 'poppins' :
+                            this.current === 'poppins' ? 'montserrat' :
+                                this.current === 'montserrat' ? 'frijole' : 'default';
 
         this.set(newFont);
     }

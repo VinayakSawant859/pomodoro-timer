@@ -378,31 +378,42 @@
     }
 
     :global([data-font="josefin"] body),
-    :global([data-font="josefin"] *) {
+    :global([data-font="josefin"] *:not(.material-symbols-outlined)) {
         font-family: "Josefin Sans", sans-serif !important;
         font-optical-sizing: auto;
     }
 
     :global([data-font="cause"] body),
-    :global([data-font="cause"] *) {
+    :global([data-font="cause"] *:not(.material-symbols-outlined)) {
         font-family: "Cause", cursive !important;
         font-optical-sizing: auto;
     }
 
     :global([data-font="cabin"] body),
-    :global([data-font="cabin"] *) {
+    :global([data-font="cabin"] *:not(.material-symbols-outlined)) {
         font-family: "Cabin Sketch", sans-serif !important;
     }
 
     :global([data-font="inconsolata"] body),
-    :global([data-font="inconsolata"] *) {
+    :global([data-font="inconsolata"] *:not(.material-symbols-outlined)) {
         font-family: "Inconsolata", monospace !important;
         font-optical-sizing: auto;
     }
 
     :global([data-font="poppins"] body),
-    :global([data-font="poppins"] *) {
+    :global([data-font="poppins"] *:not(.material-symbols-outlined)) {
         font-family: "Poppins", sans-serif !important;
+    }
+
+    :global([data-font="montserrat"] body),
+    :global([data-font="montserrat"] *:not(.material-symbols-outlined)) {
+        font-family: "Montserrat", sans-serif !important;
+        font-optical-sizing: auto;
+    }
+
+    :global([data-font="frijole"] body),
+    :global([data-font="frijole"] *:not(.material-symbols-outlined)) {
+        font-family: "Frijole", system-ui !important;
     }
 
     .app {

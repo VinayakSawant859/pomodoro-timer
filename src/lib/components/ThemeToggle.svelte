@@ -134,19 +134,8 @@
                 <path d="M9 9h6"></path>
             </svg>
         {:else if theme.current === "sakura"}
-            <svg
-                class="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-            >
-                <path
-                    d="M12 2C12 2 10.5 3.5 10.5 6.5C10.5 9.5 12 11 12 11C12 11 13.5 9.5 13.5 6.5C13.5 3.5 12 2 12 2Z"
-                ></path>
-                <path
-                    d="M12 13C12 13 10.5 14.5 10.5 17.5C10.5 20.5 12 22 12 22C12 22 13.5 20.5 13.5 17.5C13.5 14.5 12 13 12 13Z"
-                ></path>
-                <circle cx="12" cy="12" r="2"></circle>
+            <svg class="icon" viewBox="0 -960 960 960" fill="currentColor">
+                <path d="M216-176q-45-45-70.5-104T120-402q0-63 24-124.5T222-642q35-35 86.5-60t122-39.5Q501-756 591.5-759t202.5 7q8 106 5 195t-16.5 160.5q-13.5 71.5-38 125T684-182q-53 53-112.5 77.5T450-80q-65 0-127-25.5T216-176Zm112-16q29 17 59.5 24.5T450-160q46 0 91-18.5t86-59.5q18-18 36.5-50.5t32-85Q709-426 716-500.5t2-177.5q-49-2-110.5-1.5T485-670q-61 9-116 29t-90 55q-45 45-62 89t-17 85q0 59 22.5 103.5T262-246q42-80 111-153.5T534-520q-72 63-125.5 142.5T328-192Zm0 0Zm0 0Z"/>
             </svg>
         {:else if theme.current === "coffee"}
             <svg
@@ -162,15 +151,8 @@
                 <line x1="14" y1="2" x2="14" y2="4"></line>
             </svg>
         {:else if theme.current === "forest"}
-            <svg
-                class="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-            >
-                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                <path d="M2 17l10 5 10-5"></path>
-                <path d="M2 12l10 5 10-5"></path>
+            <svg class="icon" viewBox="0 -960 960 960" fill="currentColor">
+                <path d="M200-80v-80h240v-160h-80q-83 0-141.5-58.5T160-520q0-60 33-110.5t89-73.5q9-75 65.5-125.5T480-880q76 0 132.5 50.5T678-704q56 23 89 73.5T800-520q0 83-58.5 141.5T600-320h-80v160h240v80H200Zm160-320h240q50 0 85-35t35-85q0-36-20.5-66T646-630l-42-18-6-46q-6-45-39.5-75.5T480-800q-45 0-78.5 30.5T362-694l-6 46-42 18q-33 14-53.5 44T240-520q0 50 35 85t85 35Zm120-200Z"/>
             </svg>
         {:else if theme.current === "flame"}
             <svg
@@ -184,16 +166,8 @@
                 ></path>
             </svg>
         {:else if theme.current === "anime"}
-            <svg
-                class="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-            >
-                <polygon
-                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
-                ></polygon>
-                <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
+            <svg class="icon" viewBox="0 -960 960 960" fill="currentColor">
+                <path d="m440-803-83 83H240v117l-83 83 83 83v117h117l83 83 100-100 168 85-86-167 101-101-83-83v-117H523l-83-83Zm0-113 116 116h164v164l116 116-116 116 115 226q7 13 4 25.5T828-132q-8 8-20.5 11t-25.5-4L556-240 440-124 324-240H160v-164L44-520l116-116v-164h164l116-116Zm0 396Z"/>
             </svg>
         {/if}
     </button>
@@ -264,19 +238,8 @@
                 class:active={theme.current === "sakura"}
                 onclick={() => selectTheme("sakura")}
             >
-                <svg
-                    class="icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                >
-                    <path
-                        d="M12 2C12 2 10.5 3.5 10.5 6.5C10.5 9.5 12 11 12 11C12 11 13.5 9.5 13.5 6.5C13.5 3.5 12 2 12 2Z"
-                    ></path>
-                    <path
-                        d="M12 13C12 13 10.5 14.5 10.5 17.5C10.5 20.5 12 22 12 22C12 22 13.5 20.5 13.5 17.5C13.5 14.5 12 13 12 13Z"
-                    ></path>
-                    <circle cx="12" cy="12" r="2"></circle>
+                <svg class="icon" viewBox="0 -960 960 960" fill="currentColor">
+                    <path d="M216-176q-45-45-70.5-104T120-402q0-63 24-124.5T222-642q35-35 86.5-60t122-39.5Q501-756 591.5-759t202.5 7q8 106 5 195t-16.5 160.5q-13.5 71.5-38 125T684-182q-53 53-112.5 77.5T450-80q-65 0-127-25.5T216-176Zm112-16q29 17 59.5 24.5T450-160q46 0 91-18.5t86-59.5q18-18 36.5-50.5t32-85Q709-426 716-500.5t2-177.5q-49-2-110.5-1.5T485-670q-61 9-116 29t-90 55q-45 45-62 89t-17 85q0 59 22.5 103.5T262-246q42-80 111-153.5T534-520q-72 63-125.5 142.5T328-192Zm0 0Zm0 0Z"/>
                 </svg>
                 <span>Sakura</span>
             </button>
@@ -304,15 +267,8 @@
                 class:active={theme.current === "forest"}
                 onclick={() => selectTheme("forest")}
             >
-                <svg
-                    class="icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                >
-                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                    <path d="M2 17l10 5 10-5"></path>
-                    <path d="M2 12l10 5 10-5"></path>
+                <svg class="icon" viewBox="0 -960 960 960" fill="currentColor">
+                    <path d="M200-80v-80h240v-160h-80q-83 0-141.5-58.5T160-520q0-60 33-110.5t89-73.5q9-75 65.5-125.5T480-880q76 0 132.5 50.5T678-704q56 23 89 73.5T800-520q0 83-58.5 141.5T600-320h-80v160h240v80H200Zm160-320h240q50 0 85-35t35-85q0-36-20.5-66T646-630l-42-18-6-46q-6-45-39.5-75.5T480-800q-45 0-78.5 30.5T362-694l-6 46-42 18q-33 14-53.5 44T240-520q0 50 35 85t85 35Zm120-200Z"/>
                 </svg>
                 <span>Forest</span>
             </button>
@@ -338,16 +294,8 @@
                 class:active={theme.current === "anime"}
                 onclick={() => selectTheme("anime")}
             >
-                <svg
-                    class="icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                >
-                    <polygon
-                        points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
-                    ></polygon>
-                    <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
+                <svg class="icon" viewBox="0 -960 960 960" fill="currentColor">
+                    <path d="m440-803-83 83H240v117l-83 83 83 83v117h117l83 83 100-100 168 85-86-167 101-101-83-83v-117H523l-83-83Zm0-113 116 116h164v164l116 116-116 116 115 226q7 13 4 25.5T828-132q-8 8-20.5 11t-25.5-4L556-240 440-124 324-240H160v-164L44-520l116-116v-164h164l116-116Zm0 396Z"/>
                 </svg>
                 <span>Anime</span>
             </button>
@@ -383,6 +331,7 @@
         width: 1.25rem;
         height: 1.25rem;
         stroke-width: 2;
+        flex-shrink: 0;
     }
 
     .theme-dropdown {
@@ -440,6 +389,7 @@
     .theme-option .icon {
         width: 1rem;
         height: 1rem;
+        flex-shrink: 0;
     }
 
     .theme-option span {
