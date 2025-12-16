@@ -74,66 +74,6 @@ export class TimerState {
     sessionStartTime = $state<string | undefined>(undefined);
     showCompletionDialog = $state(false); // For the check-in system
     monkMode = $state(false); // Monk Mode toggle
-    zenVideoPath = $state<string | null>(null); // Path to Zen Mode background video
-
-    constructor() {
-        this.loadZenVideoPath();
-    }
-
-    async loadZenVideoPath() {
-        if (typeof window === 'undefined') return;
-        try {
-            const { load } = await import('@tauri-apps/plugin-store');
-            const store = await load('.settings.dat');
-            const savedPath = await store.get<string>('zen-video-path');
-            if (savedPath) {
-                this.zenVideoPath = savedPath;
-                console.log('Loaded zen video path:', savedPath);
-            }
-        } catch (error) {
-            console.error('Failed to load zen video path:', error);
-        }
-    }
-
-    async selectZenVideo() {
-        try {
-            const { open } = await import('@tauri-apps/plugin-dialog');
-            const selected = await open({
-                multiple: false,
-                directory: false,
-                filters: [{
-                    name: 'Video',
-                    extensions: ['mp4', 'webm', 'mov', 'avi', 'mkv']
-                }]
-            });
-            
-            if (selected && typeof selected === 'string') {
-                this.zenVideoPath = selected;
-                console.log('Selected zen video:', selected);
-                
-                // Save to store
-                const { load } = await import('@tauri-apps/plugin-store');
-                const store = await load('.settings.dat');
-                await store.set('zen-video-path', selected);
-                await store.save();
-                console.log('Saved zen video path to store');
-            }
-        } catch (error) {
-            console.error('Failed to select zen video:', error);
-        }
-    }
-
-    clearZenVideo() {
-        this.zenVideoPath = null;
-        // Clear from store
-        if (typeof window !== 'undefined') {
-            import('@tauri-apps/plugin-store').then(async ({ load }) => {
-                const store = await load('.settings.dat');
-                await store.delete('zen-video-path');
-                await store.save();
-            }).catch(console.error);
-        }
-    }
 
     async start(taskId?: string) {
         try {
