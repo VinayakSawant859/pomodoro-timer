@@ -113,7 +113,7 @@
     async function startAmbientNoise() {
         try {
             await invoke("set_white_noise", {
-                soundName: "boiler-ambient-noise.mp3",
+                soundName: "white-noise/boiler-ambient-noise.mp3",
             });
         } catch (error) {
             console.error("Failed to start ambient noise:", error);
@@ -130,8 +130,9 @@
     }
 
     onMount(() => {
+        // In normal mode, auto-play default ambient noise if it was enabled
         const savedAmbient = localStorage.getItem("ambientNoiseEnabled");
-        if (savedAmbient === "true") {
+        if (savedAmbient === "true" && !timer.monkMode) {
             ambientNoiseEnabled = true;
             startAmbientNoise();
         }
@@ -235,28 +236,28 @@
             class="circular-progress"
             data-session-type={timer.currentSession.type}
         >
-            <svg class="progress-ring" width="280" height="280">
+            <svg class="progress-ring" width="310" height="310">
                 <circle
                     class="progress-ring-background"
-                    cx="140"
-                    cy="140"
-                    r="120"
+                    cx="155"
+                    cy="155"
+                    r="135"
                     fill="transparent"
                     stroke-width="8"
                 />
                 <circle
                     class="progress-ring-progress"
-                    cx="140"
-                    cy="140"
-                    r="120"
+                    cx="155"
+                    cy="155"
+                    r="135"
                     fill="transparent"
                     stroke-width="8"
-                    stroke-dasharray={2 * Math.PI * 120}
+                    stroke-dasharray={2 * Math.PI * 135}
                     stroke-dashoffset={2 *
                         Math.PI *
-                        120 *
+                        135 *
                         (1 - progressPercentage / 100)}
-                    transform="rotate(-90 140 140)"
+                    transform="rotate(-90 155 155)"
                 />
             </svg>
             <div class="timer-content">
@@ -342,34 +343,36 @@
             </button>
         {/if}
 
-        <button
-            class="btn btn-outline ambient-toggle"
-            class:active={ambientNoiseEnabled}
-            onclick={toggleAmbientNoise}
-            title={ambientNoiseEnabled
-                ? "Stop Ambient Noise - Turn off background sound"
-                : "Start Ambient Noise - Play calming background sound to help focus"}
-        >
-            <svg
-                class="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
+        {#if !timer.monkMode}
+            <button
+                class="btn btn-outline ambient-toggle"
+                class:active={ambientNoiseEnabled}
+                onclick={toggleAmbientNoise}
+                title={ambientNoiseEnabled
+                    ? "Stop Ambient Noise - Turn off background sound"
+                    : "Start Ambient Noise - Play calming background sound to help focus"}
             >
-                {#if ambientNoiseEnabled}
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-                    <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                    <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                {:else}
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="8" y1="15" x2="16" y2="15"></line>
-                    <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                    <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                {/if}
-            </svg>
-        </button>
+                <svg
+                    class="icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    {#if ambientNoiseEnabled}
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                        <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                        <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                    {:else}
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="8" y1="15" x2="16" y2="15"></line>
+                        <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                        <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                    {/if}
+                </svg>
+            </button>
+        {/if}
 
         <button
             class="btn btn-outline"
@@ -436,11 +439,17 @@
             </div>
 
             <div class="custom-session">
-                <h4>✨ Custom Session</h4>
+                <h4>Custom Session</h4>
                 <div class="custom-card">
                     <div class="custom-inputs">
                         <div class="input-group">
-                            <label for="custom-work">🏢 Work</label>
+                            <label for="custom-work"
+                                ><img
+                                    src="/icons/work.svg"
+                                    alt="Work"
+                                    style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;"
+                                /> Work</label
+                            >
                             <div class="input-wrapper">
                                 <input
                                     id="custom-work"
@@ -455,7 +464,13 @@
                         </div>
                         <div class="input-separator">➜</div>
                         <div class="input-group">
-                            <label for="custom-break">☕ Break</label>
+                            <label for="custom-break"
+                                ><img
+                                    src="/icons/coffee.svg"
+                                    alt="Break"
+                                    style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;"
+                                /> Break</label
+                            >
                             <div class="input-wrapper">
                                 <input
                                     id="custom-break"

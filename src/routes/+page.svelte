@@ -16,6 +16,7 @@
     import Statistics from "$lib/components/Statistics.svelte";
     import Toast from "$lib/components/Toast.svelte";
     import DailySummary from "$lib/components/DailySummary.svelte";
+    import WhiteNoise from "$lib/components/WhiteNoise.svelte";
 
     let showTasks = $state(false);
     let showStatistics = $state(false);
@@ -68,10 +69,17 @@
     <title>Pomodoro Timer</title>
 </svelte:head>
 
-<main class="app" data-theme={theme.current} data-font={font.current}>
-    <header class="header">
+<main
+    class="app"
+    data-theme={theme.current}
+    data-font={font.current}
+    class:zen-mode={timer.monkMode}
+>
+    <header class="header" class:zen-header={timer.monkMode}>
         <div class="header-left">
-            <h1>Pomodoro Timer <span class="author">by vinayak</span></h1>
+            {#if !timer.monkMode}
+                <h1>Pomodoro Timer <span class="author">by vinayak</span></h1>
+            {/if}
         </div>
         <div class="header-controls">
             <button
@@ -94,31 +102,35 @@
                     </svg>
                 {/if}
             </button>
-            <button
-                class="toggle-btn stats-toggle"
-                onclick={() => (showStatistics = true)}
-                title="View Statistics - Track your productivity and progress"
-            >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <line x1="12" y1="20" x2="12" y2="10"></line>
-                    <line x1="18" y1="20" x2="18" y2="4"></line>
-                    <line x1="6" y1="20" x2="6" y2="16"></line>
-                </svg>
-            </button>
+            {#if !timer.monkMode}
+                <button
+                    class="toggle-btn stats-toggle"
+                    onclick={() => (showStatistics = true)}
+                    title="View Statistics - Track your productivity and progress"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                </button>
+            {/if}
             <button
                 class="toggle-btn monk-mode-header-toggle"
                 class:active={timer.monkMode}
                 onclick={async () => await timer.toggleMonkMode()}
                 title={timer.monkMode
-                    ? "Disable Monk Mode - Exit fullscreen focus"
-                    : "Enable Monk Mode - Fullscreen distraction-free focus"}
+                    ? "Exit Zen Mode"
+                    : "Enter Zen Mode - Fullscreen distraction-free focus"}
             >
                 <span class="material-symbols-outlined monk-mode-icon">
                     self_improvement
                 </span>
             </button>
-            <FontToggle />
-            <ThemeToggle />
+            {#if !timer.monkMode}
+                <FontToggle />
+                <ThemeToggle />
+            {/if}
         </div>
     </header>
 
@@ -134,6 +146,11 @@
                     </div>
                 </div>
             </div>
+            {#if !showTasks && timer.monkMode}
+                <div class="ambient-sound-wrapper">
+                    <WhiteNoise />
+                </div>
+            {/if}
             {#if !showTasks}
                 <div class="session-progress-container">
                     <SessionProgress />
@@ -431,12 +448,31 @@
         align-items: center;
         padding: 2.5rem 0;
         border-bottom: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .header.zen-header {
+        padding: 1.5rem 0;
+        border-bottom-color: transparent;
+        justify-content: center;
+    }
+
+    .header.zen-header .header-left {
+        display: none;
+    }
+
+    .zen-mode {
+        /* Subtle zen mode styling for main app */
     }
 
     .header-controls {
         display: flex;
         align-items: center;
         gap: 1rem;
+    }
+
+    .zen-header .header-controls {
+        gap: 0.75rem;
     }
 
     .toggle-btn {
@@ -553,6 +589,11 @@
     .session-progress-container {
         width: 100%;
         margin-top: 2rem;
+    }
+
+    .ambient-sound-wrapper {
+        width: 100%;
+        margin-top: 1.5rem;
     }
 
     .flip-card-inner {

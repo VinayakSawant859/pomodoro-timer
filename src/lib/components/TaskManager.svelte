@@ -159,26 +159,49 @@
     <!-- Stats Section -->
     <div class="stats-section">
         <button class="stats-toggle" on:click={() => (showStats = !showStats)}>
-            📊 Today's Stats ({getTodayDate()}) {showStats ? "▼" : "▶"}
+            <img
+                src="/icons/growth.svg"
+                alt="Stats"
+                style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;"
+            />
+            Today's Stats ({getTodayDate()}) {showStats ? "▼" : "▶"}
         </button>
 
         {#if showStats && stats.dailyStats}
             <div class="stats-content">
                 <div class="stat-item">
-                    <span class="stat-label">🍅 Pomodoros:</span>
+                    <span class="stat-label"
+                        ><img
+                            src="/icons/tomato.svg"
+                            alt="Tomato"
+                            style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;"
+                        />Pomodoros:</span
+                    >
                     <span class="stat-value"
                         >{stats.dailyStats.pomodoros_completed}</span
                     >
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">⏱️ Work Time:</span>
+                    <span class="stat-label"
+                        ><img
+                            src="/icons/timer.svg"
+                            alt="Timer"
+                            style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;"
+                        />Work Time:</span
+                    >
                     <span class="stat-value"
                         >{Math.floor(stats.dailyStats.total_work_time / 60)}h {stats
                             .dailyStats.total_work_time % 60}m</span
                     >
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">✅ Tasks Done:</span>
+                    <span class="stat-label"
+                        ><img
+                            src="/icons/tick.svg"
+                            alt="Tick"
+                            style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;"
+                        />Tasks Done:</span
+                    >
                     <span class="stat-value"
                         >{stats.dailyStats.tasks_completed}</span
                     >
@@ -242,7 +265,11 @@
                                                         <span
                                                             class="pom-dot"
                                                             title={`${task.actual_pomodoros} Pomodoro${task.actual_pomodoros > 1 ? "s" : ""} completed`}
-                                                            >🍅</span
+                                                            ><img
+                                                                src="/icons/tomato.svg"
+                                                                alt="Tomato"
+                                                                style="width: 14px; height: 14px;"
+                                                            /></span
                                                         >
                                                     {/each}
                                                     {#if task.actual_pomodoros > 8}
@@ -367,7 +394,11 @@
                                                     <span
                                                         class="pom-dot"
                                                         title={`${task.actual_pomodoros} Pomodoro${task.actual_pomodoros > 1 ? "s" : ""} completed`}
-                                                        >🍅</span
+                                                        ><img
+                                                            src="/icons/tomato.svg"
+                                                            alt="Tomato"
+                                                            style="width: 14px; height: 14px;"
+                                                        /></span
                                                     >
                                                 {/each}
                                                 {#if task.actual_pomodoros > 8}
@@ -381,7 +412,12 @@
                                     {/if}
                                     {#if task.completed_at}
                                         <span class="task-date"
-                                            >✓ {formatDate(
+                                            ><img
+                                                src="/icons/tick.svg"
+                                                alt="Tick"
+                                                style="width: 12px; height: 12px; vertical-align: middle; margin-right: 2px;"
+                                            />
+                                            {formatDate(
                                                 task.completed_at,
                                             )}</span
                                         >
@@ -532,7 +568,7 @@
     }
 
     .task-item.current::before {
-        content: "⏱️ Working on this";
+        content: "⏰ Working on this";
         position: absolute;
         top: -10px;
         left: 12px;

@@ -277,7 +277,13 @@
         aria-modal="true"
     >
         <div class="stats-header">
-            <h2>📊 Your Focus Journey</h2>
+            <h2>
+                <img
+                    src="/icons/growth.svg"
+                    alt="Stats"
+                    style="width: 24px; height: 24px; vertical-align: middle; margin-right: 6px;"
+                />Your Focus Journey
+            </h2>
             <button
                 class="close-btn"
                 onclick={onClose}
@@ -301,7 +307,13 @@
 
                 <div class="summary-cards">
                     <div class="summary-card primary">
-                        <div class="card-icon">🍅</div>
+                        <div class="card-icon">
+                            <img
+                                src="/icons/tomato.svg"
+                                alt="Tomato"
+                                style="width: 32px; height: 32px;"
+                            />
+                        </div>
                         <div class="card-content">
                             <div class="card-value">
                                 {stats.dailyStats.pomodoros_completed}
@@ -310,7 +322,13 @@
                         </div>
                     </div>
                     <div class="summary-card">
-                        <div class="card-icon">⏱️</div>
+                        <div class="card-icon">
+                            <img
+                                src="/icons/timer.svg"
+                                alt="Timer"
+                                style="width: 32px; height: 32px;"
+                            />
+                        </div>
                         <div class="card-content">
                             <div class="card-value">
                                 {Math.floor(
@@ -321,7 +339,13 @@
                         </div>
                     </div>
                     <div class="summary-card">
-                        <div class="card-icon">✅</div>
+                        <div class="card-icon">
+                            <img
+                                src="/icons/tick.svg"
+                                alt="Tick"
+                                style="width: 32px; height: 32px;"
+                            />
+                        </div>
                         <div class="card-content">
                             <div class="card-value">
                                 {stats.dailyStats.tasks_completed}
@@ -350,7 +374,13 @@
             {#if stats.heatmap.length > 0}
                 <div class="heatmap-section">
                     <div class="section-header">
-                        <h3>🔥 Consistency Streak</h3>
+                        <h3>
+                            <img
+                                src="/icons/fire.svg"
+                                alt="Fire"
+                                style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"
+                            />Consistency Streak
+                        </h3>
                         <button
                             class="toggle-compact-btn"
                             onclick={() => (showHeatmap = !showHeatmap)}

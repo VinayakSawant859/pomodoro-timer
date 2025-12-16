@@ -35,7 +35,12 @@
             "../static/task-delete-timer-reset.wav",
             "../static/5min-break-start.wav",
             "../static/5min-break-complete.wav",
-            "../static/boiler-ambient-noise.mp3"
+            "../static/white-noise/boiler-ambient-noise.mp3",
+            "../static/white-noise/Ambi-Val.mp3",
+            "../static/white-noise/Cumulus-Clouds.mp3",
+            "../static/white-noise/Natural-Sample-Makers.mp3",
+            "../static/white-noise/Quantum-White.mp3",
+            "../static/white-noise/Tranquil-White-Noise.mp3"
         ],
         "shortDescription": "",
         "windows": {

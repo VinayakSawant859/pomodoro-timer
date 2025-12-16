@@ -70,7 +70,13 @@
         </div>
 
         <div class="dialog-header">
-            <h2>🎯 Session Complete!</h2>
+            <h2>
+                <img
+                    src="/icons/goal.svg"
+                    alt="Goal"
+                    style="width: 28px; height: 28px; vertical-align: middle; margin-right: 8px;"
+                />Session Complete!
+            </h2>
         </div>
 
         <div class="dialog-body">
@@ -109,7 +115,13 @@
         </div>
 
         <div class="dialog-footer">
-            <p class="break-notice">⏱️ Break timer will start automatically</p>
+            <p class="break-notice">
+                <img
+                    src="/icons/timer.svg"
+                    alt="Timer"
+                    style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;"
+                />Break timer will start automatically
+            </p>
         </div>
     </div>
 </dialog>

@@ -69,13 +69,13 @@
     function getSessionIcon(type: string): string {
         switch (type) {
             case "work":
-                return "🍅";
+                return "<img src='/icons/tomato.svg' alt='Tomato' style='width: 20px; height: 20px;' />";
             case "short_break":
-                return "☕";
+                return "<img src='/icons/coffee.svg' alt='Break' style='width: 20px; height: 20px;' />";
             case "long_break":
-                return "🧘";
+                return "<img src='/icons/coffee.svg' alt='Long Break' style='width: 20px; height: 20px;' />";
             default:
-                return "⏱️";
+                return "<img src='/icons/timer.svg' alt='Timer' style='width: 20px; height: 20px;' />";
         }
     }
 
@@ -106,14 +106,26 @@
             {#if dailyHistory}
                 <div class="stats-summary">
                     <span class="stat-item">
-                        <span class="stat-icon">🍅</span>
+                        <span class="stat-icon"
+                            ><img
+                                src="/icons/tomato.svg"
+                                alt="Tomato"
+                                style="width: 18px; height: 18px;"
+                            /></span
+                        >
                         <span class="stat-value"
                             >{dailyHistory.total_work_sessions}</span
                         >
                         <span class="stat-label">work</span>
                     </span>
                     <span class="stat-item">
-                        <span class="stat-icon">⏱️</span>
+                        <span class="stat-icon"
+                            ><img
+                                src="/icons/timer.svg"
+                                alt="Timer"
+                                style="width: 18px; height: 18px;"
+                            /></span
+                        >
                         <span class="stat-value"
                             >{formatTime(dailyHistory.total_work_time)}</span
                         >
@@ -176,7 +188,7 @@
                         <div class="session-details">
                             <div class="session-type">
                                 <span class="session-icon"
-                                    >{getSessionIcon(session.type)}</span
+                                    >{@html getSessionIcon(session.type)}</span
                                 >
                                 <span class="session-name"
                                     >{getSessionLabel(session.type)}</span
@@ -197,7 +209,13 @@
                         </div>
                         <div class="session-status">
                             {#if session.completed}
-                                <span class="status-icon completed">✅</span>
+                                <span class="status-icon completed"
+                                    ><img
+                                        src="/icons/tick.svg"
+                                        alt="Tick"
+                                        style="width: 18px; height: 18px;"
+                                    /></span
+                                >
                             {:else}
                                 <span class="status-icon interrupted">❌</span>
                             {/if}
@@ -208,7 +226,13 @@
         </div>
     {:else if expanded && dailyHistory && dailyHistory.sessions.length === 0}
         <div class="no-sessions">
-            <div class="no-sessions-icon">🎯</div>
+            <div class="no-sessions-icon">
+                <img
+                    src="/icons/goal.svg"
+                    alt="Goal"
+                    style="width: 48px; height: 48px;"
+                />
+            </div>
             <p>No sessions completed yet today.</p>
             <p>Start your first Pomodoro session!</p>
         </div>
