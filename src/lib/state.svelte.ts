@@ -37,6 +37,10 @@ export interface SessionRecord {
     completed: boolean;
     started_at: string;
     completed_at?: string;
+    task_id?: string;
+    task_name?: string;
+    task_priority?: number;
+    task_estimated_pomodoros?: number;
 }
 
 export interface DailySessionHistory {
@@ -153,7 +157,8 @@ export class TimerState {
                     (this.sessionsCompleted + 1) % 4 === 0 ? 'long_break' : 'short_break',
                 duration: this.currentSession.duration,
                 completed: true,
-                startTime: this.sessionStartTime
+                startTime: this.sessionStartTime,
+                task_id: this.currentTaskId
             });
         }
 
@@ -207,6 +212,13 @@ export class TimerState {
         this.sessionNumber = 1;
         this.dailySessionCount = 0;
         this.sessionStartTime = undefined;
+    }
+
+    setActiveTask(taskId: string) {
+        this.currentTaskId = taskId;
+        this.currentSession = { type: 'work', duration: 25 };
+        this.timeRemaining = 25 * 60;
+        this.isRunning = false;
     }
 
     async toggleMonkMode() {
@@ -306,14 +318,14 @@ export class TaskState {
         }
     }
 
-    async add(text: string): Promise<Task> {
+    async add(text: string, priority: number = 0, estimated_pomodoros: number = 1): Promise<Task> {
         const task: Task = {
             id: crypto.randomUUID(),
             text,
             completed: false,
             created_at: new Date().toISOString(),
-            priority: 0,
-            estimated_pomodoros: 1,
+            priority,
+            estimated_pomodoros,
             actual_pomodoros: 0
         };
 
@@ -377,6 +389,36 @@ export class TaskState {
             // Fallback to localStorage
             this.tasks = this.tasks.map(t =>
                 t.id === id ? { ...t, text } : t
+            );
+            localStorage.setItem('pomodoro-tasks', JSON.stringify(this.tasks));
+        }
+    }
+
+    async updatePriority(id: string, priority: number) {
+        try {
+            await invoke('update_task_priority', { taskId: id, priority });
+            this.tasks = this.tasks.map(t =>
+                t.id === id ? { ...t, priority } : t
+            );
+        } catch (error) {
+            // Fallback to localStorage
+            this.tasks = this.tasks.map(t =>
+                t.id === id ? { ...t, priority } : t
+            );
+            localStorage.setItem('pomodoro-tasks', JSON.stringify(this.tasks));
+        }
+    }
+
+    async updateEstimate(id: string, estimated_pomodoros: number) {
+        try {
+            await invoke('update_task_estimate', { taskId: id, estimatedPomodoros: estimated_pomodoros });
+            this.tasks = this.tasks.map(t =>
+                t.id === id ? { ...t, estimated_pomodoros } : t
+            );
+        } catch (error) {
+            // Fallback to localStorage
+            this.tasks = this.tasks.map(t =>
+                t.id === id ? { ...t, estimated_pomodoros } : t
             );
             localStorage.setItem('pomodoro-tasks', JSON.stringify(this.tasks));
         }
@@ -652,10 +694,23 @@ export class SessionHistoryState {
         return await this.loadDaily(today);
     }
 
-    addSession(sessionData: { type: 'work' | 'short_break' | 'long_break', duration: number, completed: boolean, startTime?: string }) {
+    addSession(sessionData: { type: 'work' | 'short_break' | 'long_break', duration: number, completed: boolean, startTime?: string, task_id?: string }) {
         const now = new Date();
         const today = now.toISOString().split('T')[0];
         const startTime = sessionData.startTime ? new Date(sessionData.startTime) : now;
+
+        // Get task info if task_id is provided
+        let taskInfo: { name?: string; priority?: number; estimated_pomodoros?: number } = {};
+        if (sessionData.task_id && sessionData.type === 'work') {
+            const task = tasks.tasks.find(t => t.id === sessionData.task_id);
+            if (task) {
+                taskInfo = {
+                    name: task.text,
+                    priority: task.priority,
+                    estimated_pomodoros: task.estimated_pomodoros
+                };
+            }
+        }
 
         const session: SessionRecord = {
             id: crypto.randomUUID(),
@@ -663,7 +718,11 @@ export class SessionHistoryState {
             duration: sessionData.duration,
             completed: sessionData.completed,
             started_at: startTime.toISOString(),
-            completed_at: sessionData.completed ? now.toISOString() : undefined
+            completed_at: sessionData.completed ? now.toISOString() : undefined,
+            task_id: sessionData.task_id,
+            task_name: taskInfo.name,
+            task_priority: taskInfo.priority,
+            task_estimated_pomodoros: taskInfo.estimated_pomodoros
         };
 
         // Try to save to Tauri backend

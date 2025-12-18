@@ -190,9 +190,46 @@
                                 <span class="session-icon"
                                     >{@html getSessionIcon(session.type)}</span
                                 >
-                                <span class="session-name"
-                                    >{getSessionLabel(session.type)}</span
-                                >
+                                {#if session.task_name && session.type === "work"}
+                                    <div class="task-info">
+                                        <span class="task-name"
+                                            >{session.task_name}</span
+                                        >
+                                        {#if session.task_priority !== undefined && session.task_priority > 0}
+                                            <span
+                                                class="priority-badge"
+                                                class:high={session.task_priority ===
+                                                    3}
+                                                class:medium={session.task_priority ===
+                                                    2}
+                                                class:low={session.task_priority ===
+                                                    1}
+                                            >
+                                                {session.task_priority === 3
+                                                    ? "High"
+                                                    : session.task_priority ===
+                                                        2
+                                                      ? "Med"
+                                                      : "Low"}
+                                            </span>
+                                        {/if}
+                                        {#if session.task_estimated_pomodoros && session.task_estimated_pomodoros > 0}
+                                            <span class="tomato-count">
+                                                {#each Array(Math.min(session.task_estimated_pomodoros, 6)) as _, i}
+                                                    <img
+                                                        src="/icons/tomato.svg"
+                                                        alt="Tomato"
+                                                        style="width: 14px; height: 14px; opacity: 0.8;"
+                                                    />
+                                                {/each}
+                                            </span>
+                                        {/if}
+                                    </div>
+                                {:else}
+                                    <span class="session-name"
+                                        >{getSessionLabel(session.type)}</span
+                                    >
+                                {/if}
                                 <span class="session-duration"
                                     >({session.duration}min)</span
                                 >
@@ -391,6 +428,49 @@
         align-items: center;
         gap: 0.5rem;
         margin-bottom: 0.25rem;
+        flex-wrap: wrap;
+    }
+
+    .task-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .task-name {
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .priority-badge {
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.35rem;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .priority-badge.high {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+    }
+
+    .priority-badge.medium {
+        background: rgba(251, 146, 60, 0.15);
+        color: #fb923c;
+    }
+
+    .priority-badge.low {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+    }
+
+    .tomato-count {
+        display: flex;
+        align-items: center;
+        gap: 2px;
     }
 
     .session-icon {

@@ -1,866 +1,821 @@
 <script lang="ts">
-    import { tasks, timer, stats } from "$lib/state.svelte";
-    import type { Task, DailyStats } from "$lib/state.svelte";
+    import { flip } from "svelte/animate";
     import { onMount } from "svelte";
+    import { tasks, timer } from "$lib/state.svelte";
+    import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
 
-    // Use $props() for Svelte 5 runes mode
     interface Props {
         onStartTask?: () => void;
     }
 
     let { onStartTask }: Props = $props();
 
+    const priorityOptions = [
+        { value: 3, label: "High", color: "#ff6b6b" },
+        { value: 2, label: "Med", color: "#f7c948" },
+        { value: 1, label: "Low", color: "#4da3ff" },
+        { value: 0, label: "None", color: "#cbd5e1" },
+    ];
+
+    const tomatoRange = [1, 2, 3, 4, 5, 6];
+
     let newTaskText = $state("");
-    let editingTask = $state<Task | null>(null);
-    let editText = $state("");
-    let showStats = $state(false);
+    let newTaskPriority = $state(2);
+    let newTaskEstimate = $state(2);
+    let editingTaskId = $state<string | null>(null);
+    let editingText = $state("");
+    let isLoading = $state(false);
+    let showDeleteConfirm = $state(false);
+    let taskToDelete = $state<string | null>(null);
 
-    // Use $derived to compute filtered tasks
-    const incompleteTasks = $derived(
-        tasks.tasks.filter((task) => !task.completed),
+    const sortedTasks = $derived(
+        [...tasks.tasks].sort((a, b) => {
+            if (b.priority !== a.priority) return b.priority - a.priority;
+            return (
+                new Date(b.created_at).getTime() -
+                new Date(a.created_at).getTime()
+            );
+        }),
     );
-    const completedTasks = $derived(
-        tasks.tasks.filter((task) => task.completed),
-    );
 
-    // Format date as dd/mm
-    function formatDate(dateString: string): string {
-        try {
-            const date = new Date(dateString);
-            const day = String(date.getDate()).padStart(2, "0");
-            const month = String(date.getMonth() + 1).padStart(2, "0");
-            return `${day}/${month}`;
-        } catch {
-            return "";
-        }
-    }
-
-    // Get today's date in dd/mm format
-    function getTodayDate(): string {
-        const today = new Date();
-        const day = String(today.getDate()).padStart(2, "0");
-        const month = String(today.getMonth() + 1).padStart(2, "0");
-        return `${day}/${month}`;
-    }
-
-    onMount(async () => {
-        // Load tasks and daily stats for today
-        await tasks.load();
-        await stats.loadToday();
+    onMount(() => {
+        tasks.load();
     });
 
     async function addTask() {
-        if (newTaskText.trim()) {
-            try {
-                await tasks.add(newTaskText.trim());
-                newTaskText = "";
-            } catch (error) {
-                console.error("Failed to add task:", error);
-            }
+        if (!newTaskText.trim()) return;
+        isLoading = true;
+        try {
+            await tasks.add(
+                newTaskText.trim(),
+                newTaskPriority,
+                newTaskEstimate,
+            );
+            newTaskText = "";
+        } catch (error) {
+            console.error("Failed to add task:", error);
         }
+        isLoading = false;
     }
 
-    function startEditTask(task: Task) {
-        editingTask = task;
-        editText = task.text;
+    function beginEdit(taskId: string, text: string) {
+        editingTaskId = taskId;
+        editingText = text;
     }
 
-    async function saveEditTask() {
-        if (editingTask && editText.trim()) {
-            try {
-                await tasks.updateText(editingTask.id, editText.trim());
-            } catch (error) {
-                console.error("Failed to update task:", error);
-            }
+    async function saveEdit(taskId: string) {
+        const next = editingText.trim();
+        if (next) {
+            await tasks.updateText(taskId, next);
         }
-        editingTask = null;
-        editText = "";
+        editingTaskId = null;
+        editingText = "";
     }
 
     function cancelEdit() {
-        editingTask = null;
-        editText = "";
+        editingTaskId = null;
+        editingText = "";
     }
 
-    async function toggleTaskComplete(task: Task) {
-        try {
-            if (task.completed) {
-                await tasks.uncomplete(task.id);
-            } else {
-                await tasks.complete(task.id);
-            }
-        } catch (error) {
-            console.error("Failed to toggle task completion:", error);
+    async function toggleCompletion(taskId: string) {
+        const task = tasks.tasks.find((t) => t.id === taskId);
+        if (!task) return;
+        if (task.completed) {
+            await tasks.uncomplete(taskId);
+        } else {
+            await tasks.complete(taskId);
         }
     }
 
-    async function deleteTask(taskId: string) {
-        try {
-            await tasks.remove(taskId);
-        } catch (error) {
-            console.error("Failed to delete task:", error);
+    async function removeTask(taskId: string) {
+        taskToDelete = taskId;
+        showDeleteConfirm = true;
+    }
+
+    async function confirmDelete() {
+        if (taskToDelete) {
+            await tasks.remove(taskToDelete);
+            taskToDelete = null;
         }
     }
 
-    function startTimerWithTask(taskId: string) {
-        if (!timer.isRunning) {
-            timer.start(taskId);
-            // Flip card to show timer when task is started
-            if (onStartTask) {
-                onStartTask();
-            }
-        }
+    function cancelDelete() {
+        taskToDelete = null;
     }
 
-    function handleKeydown(event: KeyboardEvent) {
-        if (event.key === "Enter") {
-            addTask();
-        }
+    async function setPriority(taskId: string, priority: number) {
+        await tasks.updatePriority(taskId, priority);
     }
 
-    function handleEditKeydown(event: KeyboardEvent) {
-        if (event.key === "Enter") {
-            saveEditTask();
-        } else if (event.key === "Escape") {
-            cancelEdit();
-        }
+    async function setEstimate(taskId: string, estimated_pomodoros: number) {
+        await tasks.updateEstimate(taskId, estimated_pomodoros);
+    }
+
+    function focusTask(taskId: string) {
+        timer.setActiveTask(taskId);
+        onStartTask?.();
+    }
+
+    function priorityColor(priority: number) {
+        return (
+            priorityOptions.find((p) => p.value === priority)?.color ??
+            "var(--border-color)"
+        );
     }
 </script>
 
 <div class="task-manager">
-    <h2>Tasks</h2>
-
-    <div class="add-task">
-        <input
-            type="text"
-            placeholder="Add a new task..."
-            bind:value={newTaskText}
-            on:keydown={handleKeydown}
-            class="task-input"
-        />
-        <button
-            class="btn btn-primary"
-            on:click={addTask}
-            disabled={!newTaskText.trim()}
-        >
-            <svg
-                class="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-            >
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            Add
-        </button>
+    <div class="header-row">
+        <h2>Tasks</h2>
+        <div class="meta">
+            <span>{sortedTasks.length} total</span>
+            <span>{sortedTasks.filter((t) => !t.completed).length} open</span>
+        </div>
     </div>
 
-    <!-- Stats Section -->
-    <div class="stats-section">
-        <button class="stats-toggle" on:click={() => (showStats = !showStats)}>
-            <img
-                src="/icons/growth.svg"
-                alt="Stats"
-                style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;"
+    <div class="new-task-card">
+        <div class="new-input">
+            <input
+                type="text"
+                placeholder="Add a focused task"
+                bind:value={newTaskText}
+                onkeydown={(e) => e.key === "Enter" && addTask()}
             />
-            Today's Stats ({getTodayDate()}) {showStats ? "▼" : "▶"}
-        </button>
+            <button onclick={addTask} disabled={isLoading}>
+                {isLoading ? "Adding…" : "Add task"}
+            </button>
+        </div>
 
-        {#if showStats && stats.dailyStats}
-            <div class="stats-content">
-                <div class="stat-item">
-                    <span class="stat-label"
-                        ><img
-                            src="/icons/tomato.svg"
-                            alt="Tomato"
-                            style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;"
-                        />Pomodoros:</span
-                    >
-                    <span class="stat-value"
-                        >{stats.dailyStats.pomodoros_completed}</span
-                    >
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label"
-                        ><img
-                            src="/icons/timer.svg"
-                            alt="Timer"
-                            style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;"
-                        />Work Time:</span
-                    >
-                    <span class="stat-value"
-                        >{Math.floor(stats.dailyStats.total_work_time / 60)}h {stats
-                            .dailyStats.total_work_time % 60}m</span
-                    >
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label"
-                        ><img
-                            src="/icons/tick.svg"
-                            alt="Tick"
-                            style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;"
-                        />Tasks Done:</span
-                    >
-                    <span class="stat-value"
-                        >{stats.dailyStats.tasks_completed}</span
-                    >
-                </div>
-            </div>
-        {/if}
-    </div>
-
-    <div class="task-sections">
-        <!-- Incomplete Tasks -->
-        {#if incompleteTasks.length > 0}
-            <div class="task-section">
-                <h3>To Do ({incompleteTasks.length})</h3>
-                <ul class="task-list">
-                    {#each incompleteTasks as task (task.id)}
-                        <li
-                            class="task-item"
-                            class:current={timer.currentTaskId === task.id}
+        <div class="new-meta">
+            <div class="priority-group">
+                <span class="label">Priority</span>
+                <div class="priority-chips">
+                    {#each priorityOptions as option}
+                        <button
+                            class:active={newTaskPriority === option.value}
+                            style={`--chip-color: ${option.color}`}
+                            onclick={() => (newTaskPriority = option.value)}
                         >
-                            <div class="task-content">
-                                <div
-                                    class="task-checkbox"
-                                    title="Task will be marked complete when timer finishes"
-                                >
-                                    <svg
-                                        class="icon"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                    >
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                    </svg>
-                                </div>
-
-                                {#if editingTask?.id === task.id}
-                                    <input
-                                        type="text"
-                                        bind:value={editText}
-                                        on:keydown={handleEditKeydown}
-                                        on:blur={saveEditTask}
-                                        class="edit-input"
-                                    />
-                                {:else}
-                                    <div class="task-text-wrapper">
-                                        <span
-                                            class="task-text"
-                                            on:dblclick={() =>
-                                                startEditTask(task)}
-                                            role="button"
-                                            tabindex="0"
-                                        >
-                                            {task.text}
-                                        </span>
-                                        {#if task.actual_pomodoros > 0}
-                                            <div class="task-effort">
-                                                <span class="effort-label"
-                                                    >Focus invested:</span
-                                                >
-                                                <div class="pomodoro-dots">
-                                                    {#each Array(Math.min(task.actual_pomodoros, 8)) as _, i}
-                                                        <span
-                                                            class="pom-dot"
-                                                            title={`${task.actual_pomodoros} Pomodoro${task.actual_pomodoros > 1 ? "s" : ""} completed`}
-                                                            ><img
-                                                                src="/icons/tomato.svg"
-                                                                alt="Tomato"
-                                                                style="width: 14px; height: 14px;"
-                                                            /></span
-                                                        >
-                                                    {/each}
-                                                    {#if task.actual_pomodoros > 8}
-                                                        <span class="pom-count"
-                                                            >+{task.actual_pomodoros -
-                                                                8}</span
-                                                        >
-                                                    {/if}
-                                                </div>
-                                            </div>
-                                        {/if}
-                                        <span class="task-date"
-                                            >{formatDate(task.created_at)}</span
-                                        >
-                                    </div>
-                                {/if}
-                            </div>
-
-                            <div class="task-actions">
-                                {#if !timer.isRunning && timer.currentTaskId !== task.id}
-                                    <button
-                                        class="btn-icon"
-                                        on:click={() =>
-                                            startTimerWithTask(task.id)}
-                                        title="Start timer for this task"
-                                    >
-                                        <svg
-                                            class="icon"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                        >
-                                            <polygon points="5,3 19,12 5,21 5,3"
-                                            ></polygon>
-                                        </svg>
-                                    </button>
-                                {/if}
-
-                                {#if editingTask?.id !== task.id}
-                                    <button
-                                        class="btn-icon"
-                                        on:click={() => startEditTask(task)}
-                                        title="Edit task"
-                                    >
-                                        <svg
-                                            class="icon"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                        >
-                                            <path
-                                                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-                                            ></path>
-                                            <path
-                                                d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-                                            ></path>
-                                        </svg>
-                                    </button>
-
-                                    <button
-                                        class="btn-icon btn-icon-danger"
-                                        on:click={() => deleteTask(task.id)}
-                                        title="Delete task"
-                                    >
-                                        <svg
-                                            class="icon"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                        >
-                                            <polyline points="3,6 5,6 21,6"
-                                            ></polyline>
-                                            <path
-                                                d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"
-                                            ></path>
-                                        </svg>
-                                    </button>
-                                {/if}
-                            </div>
-                        </li>
+                            {option.label}
+                        </button>
                     {/each}
-                </ul>
+                </div>
             </div>
-        {/if}
 
-        <!-- Completed Tasks -->
-        {#if completedTasks.length > 0}
-            <div class="task-section">
-                <h3>Completed ({completedTasks.length})</h3>
-                <ul class="task-list">
-                    {#each completedTasks as task (task.id)}
-                        <li class="task-item completed">
-                            <div class="task-content">
-                                <button
-                                    class="task-checkbox checked"
-                                    on:click={() => toggleTaskComplete(task)}
-                                    aria-label="Mark task as incomplete"
-                                >
-                                    <svg
-                                        class="icon"
-                                        viewBox="0 0 24 24"
-                                        fill="currentColor"
-                                        stroke="currentColor"
-                                    >
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <polyline points="9,12 12,15 16,10"
-                                        ></polyline>
-                                    </svg>
-                                </button>
-
-                                <div class="task-text-wrapper">
-                                    <span class="task-text">{task.text}</span>
-                                    {#if task.actual_pomodoros > 0}
-                                        <div
-                                            class="task-effort completed-effort"
-                                        >
-                                            <span class="effort-label"
-                                                >Invested:</span
-                                            >
-                                            <div class="pomodoro-dots">
-                                                {#each Array(Math.min(task.actual_pomodoros, 8)) as _, i}
-                                                    <span
-                                                        class="pom-dot"
-                                                        title={`${task.actual_pomodoros} Pomodoro${task.actual_pomodoros > 1 ? "s" : ""} completed`}
-                                                        ><img
-                                                            src="/icons/tomato.svg"
-                                                            alt="Tomato"
-                                                            style="width: 14px; height: 14px;"
-                                                        /></span
-                                                    >
-                                                {/each}
-                                                {#if task.actual_pomodoros > 8}
-                                                    <span class="pom-count"
-                                                        >+{task.actual_pomodoros -
-                                                            8}</span
-                                                    >
-                                                {/if}
-                                            </div>
-                                        </div>
-                                    {/if}
-                                    {#if task.completed_at}
-                                        <span class="task-date"
-                                            ><img
-                                                src="/icons/tick.svg"
-                                                alt="Tick"
-                                                style="width: 12px; height: 12px; vertical-align: middle; margin-right: 2px;"
-                                            />
-                                            {formatDate(
-                                                task.completed_at,
-                                            )}</span
-                                        >
-                                    {/if}
-                                </div>
-                            </div>
-
-                            <div class="task-actions">
-                                <button
-                                    class="btn-icon btn-icon-danger"
-                                    on:click={() => deleteTask(task.id)}
-                                    title="Delete task"
-                                >
-                                    <svg
-                                        class="icon"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                    >
-                                        <polyline points="3,6 5,6 21,6"
-                                        ></polyline>
-                                        <path
-                                            d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"
-                                        ></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </li>
+            <div class="tomato-picker">
+                <span class="label">Estimate</span>
+                <div class="tomatoes">
+                    {#each tomatoRange as count}
+                        <button
+                            class:active={newTaskEstimate === count}
+                            onclick={() => (newTaskEstimate = count)}
+                        >
+                            {#each Array(count) as _}
+                                <img
+                                    src="/icons/tomato.svg"
+                                    alt="Tomato"
+                                    class="tomato-icon"
+                                />
+                            {/each}
+                        </button>
                     {/each}
-                </ul>
+                </div>
             </div>
-        {/if}
-
-        {#if incompleteTasks.length === 0 && completedTasks.length === 0}
-            <div class="empty-state">
-                <svg
-                    class="empty-icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                >
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"
-                    ></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-                <h3>No tasks yet</h3>
-                <p>Add a task to get started with your Pomodoro sessions!</p>
-            </div>
-        {/if}
+        </div>
     </div>
+
+    {#if sortedTasks.length === 0}
+        <p class="empty-state">No tasks yet. Add your first focus item.</p>
+    {:else}
+        <div class="tasks-grid">
+            {#each sortedTasks as task (task.id)}
+                <article
+                    class={`task-card ${task.completed ? "completed" : ""} ${timer.currentTaskId === task.id ? "active" : ""}`}
+                    style={`--priority-color: ${priorityColor(task.priority)}`}
+                    animate:flip
+                >
+                    <div class="card-top">
+                        <div
+                            class="badge priority"
+                            title={`Priority ${task.priority}`}
+                        >
+                            {priorityOptions.find(
+                                (p) => p.value === task.priority,
+                            )?.label ?? "None"}
+                        </div>
+                        {#if timer.currentTaskId === task.id}
+                            <div class="badge focus">Focusing</div>
+                        {/if}
+                    </div>
+
+                    <div class="title-row">
+                        <div class="title-group">
+                            <input
+                                type="checkbox"
+                                checked={task.completed}
+                                onchange={() => toggleCompletion(task.id)}
+                                aria-label={`Mark ${task.text} as ${task.completed ? "incomplete" : "complete"}`}
+                            />
+                            {#if editingTaskId === task.id}
+                                <input
+                                    class="edit-input"
+                                    bind:value={editingText}
+                                    onkeydown={(e) => {
+                                        if (e.key === "Enter")
+                                            saveEdit(task.id);
+                                        if (e.key === "Escape") cancelEdit();
+                                    }}
+                                    onblur={() => saveEdit(task.id)}
+                                />
+                            {:else}
+                                <button
+                                    class="task-title"
+                                    onclick={() =>
+                                        beginEdit(task.id, task.text)}
+                                >
+                                    {task.text}
+                                </button>
+                            {/if}
+                        </div>
+                        <button
+                            class="ghost small"
+                            onclick={() => beginEdit(task.id, task.text)}
+                        >
+                            Edit
+                        </button>
+                    </div>
+
+                    <div class="meta-row">
+                        <div class="tomato-actual" title="Actual / Estimated">
+                            {#each Array(task.actual_pomodoros) as _, i}
+                                <img
+                                    src="/icons/tomato.svg"
+                                    alt="Tomato"
+                                    class="tomato filled"
+                                    aria-label={`Actual ${i + 1}`}
+                                />
+                            {/each}
+                            {#each Array(Math.max(task.estimated_pomodoros - task.actual_pomodoros, 0)) as _, i}
+                                <span
+                                    class="tomato empty"
+                                    aria-label={`Remaining ${i + 1}`}>○</span
+                                >
+                            {/each}
+                            <span class="ratio"
+                                >{task.actual_pomodoros}/{task.estimated_pomodoros}</span
+                            >
+                        </div>
+                        <div class="estimate-picker">
+                            {#each tomatoRange as count}
+                                <button
+                                    class:active={task.estimated_pomodoros ===
+                                        count}
+                                    onclick={() => setEstimate(task.id, count)}
+                                    aria-label={`Set estimate to ${count} pomodoros`}
+                                >
+                                    {#each Array(count) as _}
+                                        <img
+                                            src="/icons/tomato.svg"
+                                            alt="Tomato"
+                                            class="tomato-icon"
+                                        />
+                                    {/each}
+                                </button>
+                            {/each}
+                        </div>
+                    </div>
+
+                    <div class="footer-row">
+                        <div class="priority-controls">
+                            {#each priorityOptions as option}
+                                <button
+                                    class:active={task.priority ===
+                                        option.value}
+                                    style={`--chip-color: ${option.color}`}
+                                    onclick={() =>
+                                        setPriority(task.id, option.value)}
+                                >
+                                    {option.label}
+                                </button>
+                            {/each}
+                        </div>
+                        <div class="actions">
+                            <button
+                                class="primary"
+                                onclick={() => focusTask(task.id)}
+                                aria-label={`Focus ${task.text}`}
+                            >
+                                ▶ Focus
+                            </button>
+                            <button
+                                class="ghost danger"
+                                onclick={() => removeTask(task.id)}
+                                >Delete</button
+                            >
+                        </div>
+                    </div>
+                </article>
+            {/each}
+        </div>
+    {/if}
 </div>
+
+<ConfirmDialog
+    bind:isOpen={showDeleteConfirm}
+    title="Delete Task"
+    message="Are you sure you want to delete this task? This action cannot be undone."
+    confirmText="Delete"
+    cancelText="Cancel"
+    variant="danger"
+    onConfirm={confirmDelete}
+    onCancel={cancelDelete}
+/>
 
 <style>
     .task-manager {
         background: var(--surface-color);
-        border-radius: 1.25rem;
-        padding: 2.5rem;
-        box-shadow:
-            0 1px 3px rgba(0, 0, 0, 0.08),
-            0 4px 12px rgba(0, 0, 0, 0.05),
-            0 0 0 1px var(--border-color);
-        border: none;
-    }
-
-    h2 {
-        margin-bottom: 1.5rem;
-        color: var(--text-color);
-    }
-
-    .add-task {
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 20px 60px var(--shadow);
         display: flex;
-        gap: 0.5rem;
-        margin-bottom: 2rem;
+        flex-direction: column;
+        gap: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .task-input {
-        flex: 1;
-        padding: 0.75rem;
-        border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-        background: var(--background-color);
+    .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+    }
+
+    .header-row h2 {
         color: var(--text-color);
-        font-size: 1rem;
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
     }
 
-    .task-input:focus {
+    .meta {
+        display: flex;
+        gap: 14px;
+        color: var(--text-secondary);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .new-task-card {
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 20px;
+        background: var(--background-color);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .new-input {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+    }
+
+    .new-input input {
+        padding: 14px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--surface-color);
+        color: var(--text-color);
+        font-size: 0.95rem;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .new-input input:focus {
         outline: none;
         border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.1);
     }
 
-    .task-sections {
-        display: flex;
-        flex-direction: column;
-        gap: 2.5rem;
+    .new-input button {
+        padding: 14px 20px;
+        border: none;
+        border-radius: 12px;
+        background: var(--primary-color);
+        color: white;
+        font-weight: 700;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .task-section h3 {
-        margin-bottom: 1rem;
-        color: var(--text-secondary);
-        font-size: 1rem;
-        font-weight: 600;
-        letter-spacing: 0.02em;
+    .new-input button:hover:not(:disabled) {
+        background: var(--primary-light);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px var(--shadow);
+    }
+
+    .new-input button:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .new-input button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .new-meta {
+        display: grid;
+        gap: 16px;
+    }
+
+    .label {
+        font-size: 11px;
         text-transform: uppercase;
-        opacity: 0.8;
+        letter-spacing: 0.05em;
+        color: var(--text-secondary);
+        font-weight: 700;
+        margin-bottom: 2px;
     }
 
-    .task-list {
-        list-style: none;
+    .priority-group,
+    .tomato-picker {
+        display: grid;
+        gap: 8px;
+    }
+
+    .priority-chips,
+    .tomatoes {
         display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
+        flex-wrap: wrap;
+        gap: 10px;
     }
 
-    .task-item {
+    .priority-chips button,
+    .priority-controls button {
+        border: 2px solid var(--chip-color, var(--border-color));
+        background: transparent;
+        color: var(--text-color);
+        padding: 10px 16px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.85rem;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .priority-chips button:hover,
+    .priority-controls button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .priority-chips button.active,
+    .priority-controls button.active {
+        background: var(--chip-color);
+        color: white;
+        border-color: var(--chip-color);
+        box-shadow: 0 4px 14px var(--shadow);
+    }
+
+    .tomatoes button,
+    .estimate-picker button {
+        border: 1px solid var(--border-color);
+        background: var(--surface-color);
+        color: var(--text-color);
+        padding: 8px 12px;
+        border-radius: 12px;
+        cursor: pointer;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 1.25rem;
-        background: var(--background-color);
-        border: 1px solid var(--border-color);
-        border-radius: 0.75rem;
+        gap: 4px;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
-    .task-item:hover {
+    .tomatoes button:hover,
+    .estimate-picker button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .tomatoes button.active,
+    .estimate-picker button.active {
         border-color: var(--primary-color);
+        background: var(--primary-color);
+        box-shadow: 0 6px 18px var(--shadow);
+    }
+
+    .tomato-icon {
+        width: 18px;
+        height: 18px;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tomatoes button:hover .tomato-icon,
+    .estimate-picker button:hover .tomato-icon {
+        transform: scale(1.1);
+    }
+
+    .tasks-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+    }
+
+    .task-card {
+        position: relative;
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        background: var(--background-color);
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-left: 5px solid var(--priority-color);
+        padding: 18px 20px 20px;
+        display: grid;
+        gap: 16px;
+    }
+
+    .task-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 50px var(--shadow);
+        border-color: var(--priority-color);
+    }
+
+    .task-card.active {
         box-shadow:
-            0 4px 12px rgba(0, 0, 0, 0.08),
-            0 2px 4px rgba(0, 0, 0, 0.04);
+            0 0 0 2px var(--primary-color),
+            0 20px 50px var(--shadow);
+        border-left-color: var(--primary-color);
+    }
+
+    .task-card.completed {
+        opacity: 0.6;
+        filter: grayscale(0.3);
+    }
+
+    .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 4px;
+    }
+
+    .badge {
+        padding: 7px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--border-color);
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        background: var(--surface-color);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .badge.priority {
+        border-color: var(--priority-color);
+        color: var(--text-color);
+        background: transparent;
+    }
+
+    .badge.focus {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background: var(--primary-color);
+        color: white;
+        box-shadow: 0 0 0 3px var(--shadow);
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.8;
+        }
+    }
+
+    .title-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        align-items: center;
+    }
+
+    .title-group {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex: 1;
+    }
+
+    .title-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: var(--primary-color);
+    }
+
+    .task-title {
+        border: none;
+        background: transparent;
+        color: var(--text-color);
+        font-weight: 700;
+        font-size: 1.05rem;
+        text-align: left;
+        cursor: pointer;
+        width: 100%;
+        padding: 4px 0;
+        line-height: 1.5;
+        transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .task-title:hover {
+        color: var(--primary-color);
+    }
+
+    .ghost.small {
+        padding: 7px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: transparent;
+        cursor: pointer;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .ghost.small:hover {
+        background: var(--surface-color);
+        color: var(--text-color);
         transform: translateY(-1px);
     }
 
-    .task-item.current {
-        border-color: var(--primary-color);
-        background: linear-gradient(
-            135deg,
-            rgba(99, 102, 241, 0.08),
-            rgba(99, 102, 241, 0.03)
-        );
-        box-shadow:
-            0 0 0 2px rgba(99, 102, 241, 0.12),
-            0 4px 16px rgba(99, 102, 241, 0.15),
-            0 2px 8px rgba(99, 102, 241, 0.1);
-        position: relative;
-    }
-
-    .task-item.current::before {
-        content: "⏰ Working on this";
-        position: absolute;
-        top: -10px;
-        left: 12px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        color: var(--primary-color);
-        background: var(--background-color);
-        padding: 0.15rem 0.5rem;
-        border-radius: 0.25rem;
-        border: 1px solid var(--primary-color);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .task-item.completed {
-        opacity: 0.7;
-    }
-
-    .task-content {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        flex: 1;
-    }
-
-    .task-checkbox {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: var(--border-color);
-        transition: color 0.2s ease;
-        padding: 0;
-    }
-
-    .task-checkbox:hover {
-        color: var(--primary-color);
-        transform: scale(1.1);
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .task-checkbox:active {
-        transform: scale(0.95);
-        transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .task-checkbox.checked {
-        color: var(--success-color);
-    }
-
-    .task-text-wrapper {
+    .meta-row {
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
-        flex: 1;
+        gap: 14px;
+        padding: 12px 0;
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
     }
 
-    .task-text {
-        color: var(--text-color);
-        cursor: pointer;
-        font-weight: 500;
-        letter-spacing: 0.01em;
-        line-height: 1.5;
-    }
-
-    .task-effort {
+    .tomato-actual {
         display: flex;
+        gap: 8px;
         align-items: center;
-        gap: 0.5rem;
-        margin-top: 0.25rem;
+        flex-wrap: wrap;
+        font-weight: 700;
     }
 
-    .effort-label {
-        font-size: 0.75rem;
+    .tomato {
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tomato.filled {
+        width: 20px;
+        height: 20px;
+        filter: drop-shadow(0 2px 4px var(--shadow));
+    }
+
+    .tomato.empty {
+        font-size: 18px;
+        opacity: 0.4;
         color: var(--text-secondary);
-        font-weight: 500;
-        letter-spacing: 0.03em;
-        text-transform: uppercase;
-        opacity: 0.75;
     }
 
-    .pomodoro-dots {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-
-    .pom-dot {
-        font-size: 0.65rem;
-        opacity: 0.9;
-        animation: fadeIn 0.3s ease-in;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: scale(0.8);
-        }
-        to {
-            opacity: 0.9;
-            transform: scale(1);
-        }
-    }
-
-    .pom-count {
-        font-size: 0.7rem;
-        color: var(--primary-color);
+    .ratio {
+        margin-left: 8px;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
         font-weight: 600;
-        background: var(--hover-bg);
-        padding: 0.1rem 0.35rem;
-        border-radius: 0.25rem;
     }
 
-    .completed-effort {
-        opacity: 0.7;
-    }
-
-    .task-date {
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-        font-weight: 500;
-        letter-spacing: 0.02em;
-        opacity: 0.8;
-    }
-
-    .completed .task-text {
-        text-decoration: line-through;
-        color: var(--text-secondary);
-    }
-
-    .edit-input {
-        flex: 1;
-        padding: 0.25rem 0.5rem;
-        border: 1px solid var(--primary-color);
-        border-radius: 0.25rem;
-        background: var(--background-color);
-        color: var(--text-color);
-        font-size: inherit;
-    }
-
-    .task-actions {
+    .estimate-picker {
         display: flex;
-        gap: 0.25rem;
+        flex-wrap: wrap;
+        gap: 10px;
     }
 
-    .btn {
-        display: inline-flex;
+    .footer-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 0.5rem;
-        font-weight: 500;
+        padding-top: 4px;
+    }
+
+    .priority-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .actions button {
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: 1px solid var(--border-color);
         cursor: pointer;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .btn:hover:not(:disabled) {
-        background-color: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
-    }
-
-    .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        background-color: var(--surface-color);
-        color: var(--text-secondary);
-    }
-
-    .btn-primary {
+    .actions .primary {
         background: var(--primary-color);
+        border-color: var(--primary-color);
         color: white;
     }
 
-    .btn-primary:hover:not(:disabled) {
-        background: var(--primary-dark);
+    .actions .primary:hover {
+        background: var(--primary-light);
+        box-shadow: 0 8px 20px var(--shadow);
+        transform: translateY(-2px);
     }
 
-    .btn-primary:active:not(:disabled) {
-        transform: scale(0.97);
-        transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    .actions .primary:active {
+        transform: translateY(0);
     }
 
-    .btn-icon {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0.5rem;
-        border-radius: 0.25rem;
+    .actions .ghost {
+        background: transparent;
         color: var(--text-secondary);
-        transition: all 0.2s ease;
     }
 
-    .btn-icon:hover {
+    .actions .ghost:hover {
         background: var(--surface-color);
         color: var(--text-color);
-        transform: scale(1.05);
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateY(-1px);
     }
 
-    .btn-icon-danger:hover {
+    .actions .danger {
+        color: var(--error-color);
+        border-color: var(--error-color);
+    }
+
+    .actions .danger:hover {
         background: var(--error-color);
         color: white;
     }
 
-    .icon {
-        width: 1rem;
-        height: 1rem;
-        stroke-width: 2.5;
+    .edit-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        background: var(--surface-color);
+        color: var(--text-color);
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .edit-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px var(--shadow);
     }
 
     .empty-state {
+        color: var(--text-secondary);
+        padding: 40px 20px;
         text-align: center;
-        padding: 3rem 1rem;
-        color: var(--text-secondary);
-    }
-
-    .empty-icon {
-        width: 3rem;
-        height: 3rem;
-        margin: 0 auto 1rem;
-        color: var(--border-color);
-    }
-
-    .empty-state h3 {
-        margin-bottom: 0.5rem;
-        color: var(--text-secondary);
-    }
-
-    /* Stats Section */
-    .stats-section {
-        margin-bottom: 2rem;
-        border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-        overflow: hidden;
-    }
-
-    .stats-toggle {
-        width: 100%;
-        padding: 1rem;
-        background: var(--surface-color);
-        border: none;
-        cursor: pointer;
+        font-size: 1rem;
         font-weight: 500;
-        text-align: left;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.2s ease;
-        color: var(--text-color);
+        opacity: 0.7;
     }
 
-    .stats-toggle:hover {
-        background: var(--surface-hover);
-    }
-
-    .stats-content {
-        padding: 1rem;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 1rem;
-    }
-
-    .stat-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .stat-label {
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-        margin-bottom: 0.25rem;
-    }
-
-    .stat-value {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--accent-color);
-    }
-
-    @media (max-width: 768px) {
+    @media (max-width: 640px) {
         .task-manager {
-            padding: 1.5rem;
+            padding: 20px;
         }
 
-        .task-item {
-            padding: 0.75rem;
+        .tasks-grid {
+            grid-template-columns: 1fr;
         }
 
-        .add-task {
+        .footer-row {
             flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .priority-controls {
+            width: 100%;
+        }
+
+        .actions {
+            width: 100%;
+            justify-content: space-between;
         }
     }
 </style>
