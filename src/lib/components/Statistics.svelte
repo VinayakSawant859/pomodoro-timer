@@ -82,9 +82,22 @@
         // Load weekly data
         await loadWeeklyData();
 
-        // Create charts
-        createTodayChart();
-        createWeeklyChart();
+        // Charts will be created when showDetails becomes true
+    });
+
+    // Watch for showDetails changes and create charts when they become visible
+    $effect(() => {
+        if (showDetails) {
+            // Use setTimeout to ensure canvas elements are rendered
+            setTimeout(() => {
+                if (todayChartCanvas && !todayChart) {
+                    createTodayChart();
+                }
+                if (weeklyChartCanvas && !weeklyChart) {
+                    createWeeklyChart();
+                }
+            }, 50);
+        }
     });
 
     onDestroy(() => {
@@ -135,14 +148,16 @@
         const ctx = todayChartCanvas.getContext("2d");
         if (!ctx) return;
 
+        // Always provide data, even if zero
         const dailyHistory = sessionHistory.history;
         const workSessions =
-            dailyHistory?.sessions.filter((s) => s.type === "work").length || 0;
+            dailyHistory?.sessions?.filter((s) => s.type === "work").length ||
+            0;
         const shortBreaks =
-            dailyHistory?.sessions.filter((s) => s.type === "short_break")
+            dailyHistory?.sessions?.filter((s) => s.type === "short_break")
                 .length || 0;
         const longBreaks =
-            dailyHistory?.sessions.filter((s) => s.type === "long_break")
+            dailyHistory?.sessions?.filter((s) => s.type === "long_break")
                 .length || 0;
         const workTime = dailyHistory?.total_work_time || 0;
 
@@ -204,19 +219,33 @@
     }
 
     function createWeeklyChart() {
-        if (!weeklyChartCanvas || weeklyData.length === 0) return;
+        if (!weeklyChartCanvas) return;
 
         const ctx = weeklyChartCanvas.getContext("2d");
         if (!ctx) return;
 
+        // Ensure we have data even if it's all zeros
+        const dataToRender =
+            weeklyData.length > 0
+                ? weeklyData
+                : [
+                      { label: "Mon", pomodoros: 0, tasks: 0 },
+                      { label: "Tue", pomodoros: 0, tasks: 0 },
+                      { label: "Wed", pomodoros: 0, tasks: 0 },
+                      { label: "Thu", pomodoros: 0, tasks: 0 },
+                      { label: "Fri", pomodoros: 0, tasks: 0 },
+                      { label: "Sat", pomodoros: 0, tasks: 0 },
+                      { label: "Sun", pomodoros: 0, tasks: 0 },
+                  ];
+
         weeklyChart = new Chart(ctx, {
             type: "line",
             data: {
-                labels: weeklyData.map((d) => d.label),
+                labels: dataToRender.map((d) => d.label),
                 datasets: [
                     {
                         label: "Pomodoros",
-                        data: weeklyData.map((d) => d.pomodoros),
+                        data: dataToRender.map((d) => d.pomodoros),
                         borderColor: "rgba(99, 102, 241, 1)",
                         backgroundColor: "rgba(99, 102, 241, 0.1)",
                         tension: 0.4,
@@ -224,7 +253,7 @@
                     },
                     {
                         label: "Tasks Completed",
-                        data: weeklyData.map((d) => d.tasks),
+                        data: dataToRender.map((d) => d.tasks),
                         borderColor: "rgba(16, 185, 129, 1)",
                         backgroundColor: "rgba(16, 185, 129, 0.1)",
                         tension: 0.4,
@@ -306,7 +335,7 @@
                 </div>
 
                 <div class="summary-cards">
-                    <div class="summary-card primary">
+                    <div class="summary-card">
                         <div class="card-icon">
                             <img
                                 src="/icons/tomato.svg"
@@ -370,50 +399,70 @@
                 </div>
             {/if}
 
-            <!-- Consistency Heatmap -->
-            {#if stats.heatmap.length > 0}
-                <div class="heatmap-section">
-                    <div class="section-header">
-                        <h3>
-                            <img
-                                src="/icons/fire.svg"
-                                alt="Fire"
-                                style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"
-                            />Consistency Streak
-                        </h3>
-                        <button
-                            class="toggle-compact-btn"
-                            onclick={() => (showHeatmap = !showHeatmap)}
-                        >
-                            {showHeatmap ? "Hide" : "Show"}
-                        </button>
-                    </div>
-                    {#if showHeatmap}
-                        <div class="heatmap-container">
-                            <div class="heatmap-grid">
-                                {#each stats.heatmap as day}
-                                    <div
-                                        class="heatmap-cell level-{day.level}"
-                                        title="{day.date}: {day.count} {day.count ===
-                                        1
-                                            ? 'session'
-                                            : 'sessions'}"
-                                    ></div>
-                                {/each}
+            <!-- Habit Tracker -->
+            <div class="heatmap-section">
+                <div class="section-header">
+                    <h3>
+                        <img
+                            src="/icons/fire.svg"
+                            alt="Fire"
+                            style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"
+                        />Consistency Streak
+                    </h3>
+                    <button
+                        class="toggle-compact-btn"
+                        onclick={() => (showHeatmap = !showHeatmap)}
+                    >
+                        {showHeatmap ? "Hide" : "Show"}
+                    </button>
+                </div>
+                {#if showHeatmap}
+                    {@const today = new Date()}
+                    {@const currentMonth = today.getMonth()}
+                    {@const currentYear = today.getFullYear()}
+                    {@const daysInMonth = new Date(
+                        currentYear,
+                        currentMonth + 1,
+                        0,
+                    ).getDate()}
+                    {@const todayDate = today.getDate()}
+                    <div class="habit-tracker">
+                        <div class="habit-grid">
+                            {#each Array(daysInMonth) as _, i}
+                                {@const dayNum = i + 1}
+                                {@const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`}
+                                {@const dayData = stats.heatmap.find(
+                                    (d) => d.date === dateStr,
+                                )}
+                                {@const isCompleted =
+                                    dayData && dayData.count >= 3}
+                                {@const isToday = dayNum === todayDate}
+                                <div
+                                    class="habit-day"
+                                    class:completed={isCompleted}
+                                    class:today={isToday}
+                                    title="{dateStr}: {dayData?.count ||
+                                        0} sessions {isCompleted
+                                        ? '(✓ 3+)'
+                                        : ''}"
+                                >
+                                    <span class="day-num">{dayNum}</span>
+                                </div>
+                            {/each}
+                        </div>
+                        <div class="habit-legend">
+                            <div class="legend-item">
+                                <div class="legend-box empty"></div>
+                                <span>Incomplete</span>
                             </div>
-                            <div class="heatmap-legend">
-                                <span class="legend-label">Less</span>
-                                <div class="legend-cell level-0"></div>
-                                <div class="legend-cell level-1"></div>
-                                <div class="legend-cell level-2"></div>
-                                <div class="legend-cell level-3"></div>
-                                <div class="legend-cell level-4"></div>
-                                <span class="legend-label">More</span>
+                            <div class="legend-item">
+                                <div class="legend-box completed"></div>
+                                <span>3+ Pomodoros</span>
                             </div>
                         </div>
-                    {/if}
-                </div>
-            {/if}
+                    </div>
+                {/if}
+            </div>
 
             <!-- Expandable Details -->
             <div class="details-toggle">
@@ -568,33 +617,24 @@
 
     .summary-card {
         background: var(--background-color);
-        border: 2px solid var(--border-color);
+        border: 1px solid var(--border-color);
         border-radius: 1rem;
         padding: 1.75rem;
         display: flex;
         align-items: center;
         gap: 1.25rem;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .summary-card:hover {
         border-color: var(--primary-color);
-        transform: translateY(-3px) scale(1.01);
-        box-shadow:
-            0 8px 20px rgba(0, 0, 0, 0.1),
-            0 4px 8px rgba(0, 0, 0, 0.06);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--shadow);
     }
 
-    .summary-card.primary {
-        border-color: var(--primary-color);
-        background: linear-gradient(
-            135deg,
-            rgba(99, 102, 241, 0.05),
-            rgba(139, 92, 246, 0.05)
-        );
-        box-shadow:
-            0 4px 12px rgba(99, 102, 241, 0.12),
-            0 2px 4px rgba(99, 102, 241, 0.08);
+    .summary-card:focus-visible {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
     }
 
     .card-icon {
@@ -789,66 +829,95 @@
         gap: 1rem;
     }
 
-    .heatmap-grid {
+    .habit-tracker {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .habit-grid {
         display: grid;
-        grid-template-columns: repeat(53, 1fr);
-        grid-auto-rows: 14px;
-        gap: 3px;
+        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+        gap: 8px;
         padding: 0.5rem;
-        overflow-x: auto;
     }
 
-    .heatmap-cell {
-        border-radius: 3px;
-        transition: all 0.2s ease;
-        cursor: pointer;
-        min-width: 14px;
-    }
-
-    .heatmap-cell:hover {
-        transform: scale(1.3);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        z-index: 10;
-    }
-
-    .heatmap-cell.level-0 {
-        background: var(--border-color);
-    }
-
-    .heatmap-cell.level-1 {
-        background: rgba(99, 102, 241, 0.2);
-    }
-
-    .heatmap-cell.level-2 {
-        background: rgba(99, 102, 241, 0.4);
-    }
-
-    .heatmap-cell.level-3 {
-        background: rgba(99, 102, 241, 0.6);
-    }
-
-    .heatmap-cell.level-4 {
-        background: rgba(99, 102, 241, 0.9);
-    }
-
-    .heatmap-legend {
+    .habit-day {
+        aspect-ratio: 1;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--surface-color);
         display: flex;
         align-items: center;
-        justify-content: flex-end;
-        gap: 0.5rem;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        opacity: 0.5;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+
+    .habit-day:hover {
+        transform: scale(1.08);
+        opacity: 0.8;
+        box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .habit-day.completed {
+        background: var(--primary-color);
+        color: white;
+        opacity: 0.85;
+        border-color: var(--primary-color);
+    }
+
+    .habit-day.today {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+        opacity: 1;
+    }
+
+    .habit-day.today:not(.completed) {
+        background: var(--background-color);
+        color: var(--text-color);
+    }
+
+    .day-num {
+        font-size: 0.9rem;
+    }
+
+    .habit-legend {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
         padding: 0.5rem;
     }
 
-    .legend-label {
-        font-size: 0.75rem;
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
         color: var(--text-secondary);
-        font-weight: 500;
     }
 
-    .legend-cell {
-        width: 14px;
-        height: 14px;
-        border-radius: 3px;
+    .legend-box {
+        width: 20px;
+        height: 20px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+    }
+
+    .legend-box.empty {
+        background: var(--surface-color);
+        opacity: 0.5;
+    }
+
+    .legend-box.completed {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        opacity: 0.85;
     }
 
     @media (max-width: 768px) {
@@ -876,14 +945,13 @@
             height: 300px;
         }
 
-        .heatmap-grid {
-            grid-template-columns: repeat(26, 1fr);
-            gap: 2px;
+        .habit-grid {
+            grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
+            gap: 6px;
         }
 
-        .heatmap-cell {
-            min-width: 12px;
-            grid-auto-rows: 12px;
+        .habit-day {
+            font-size: 0.8rem;
         }
 
         .insight-card {
