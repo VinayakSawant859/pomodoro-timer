@@ -48,6 +48,14 @@ Thumbs.db
 src-tauri/target/
 src-tauri/Cargo.lock
 
+# Tauri bundles and installers (large artifacts)
+src-tauri/target/**/bundle/
+*.deb
+*.rpm
+*.AppImage
+*.msi
+*.dmg
+
 # Package manager
 package-lock.json
 yarn.lock
