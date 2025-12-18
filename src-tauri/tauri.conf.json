@@ -8,7 +8,11 @@
     },
     "bundle": {
         "active": true,
-        "targets": ["deb", "msi", "dmg"],
+        "targets": [
+            "deb",
+            "msi",
+            "dmg"
+        ],
         "category": "Productivity",
         "copyright": "",
         "externalBin": [],

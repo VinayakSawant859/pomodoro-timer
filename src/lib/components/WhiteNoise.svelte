@@ -175,6 +175,15 @@
         isBrowsing = !isBrowsing;
     }
 
+    // Handle playlist button: switch when different, toggle browse when same
+    async function handlePlaylistButton(playlist: PlaylistType) {
+        if (currentPlaylist === playlist) {
+            isBrowsing = !isBrowsing;
+            return;
+        }
+        await switchPlaylist(playlist);
+    }
+
     // Playlist switcher - stops playback, loads track 1, opens browse
     async function switchPlaylist(playlist: PlaylistType) {
         if (currentPlaylist === playlist) return;
@@ -224,44 +233,34 @@
 </script>
 
 <div class="ambient-card" class:browsing={isBrowsing} class:playing={isPlaying}>
-    <!-- Header with playlist buttons and Browse button -->
+    <!-- Header with title and playlist buttons (Browse button removed) -->
     <div class="ambient-header">
         <div class="header-left">
             <span class="ambient-title">Ambient Sounds</span>
-            <div class="playlist-selector">
-                <button
-                    class="playlist-btn white"
-                    class:active={currentPlaylist === "white"}
-                    onclick={() => switchPlaylist("white")}
-                    title="White Noise"
-                    aria-label="Select White Noise playlist"
-                >
-                </button>
-                <button
-                    class="playlist-btn brown"
-                    class:active={currentPlaylist === "brown"}
-                    onclick={() => switchPlaylist("brown")}
-                    title="Brown Noise"
-                    aria-label="Select Brown Noise playlist"
-                >
-                </button>
-                <button
-                    class="playlist-btn pink"
-                    class:active={currentPlaylist === "pink"}
-                    onclick={() => switchPlaylist("pink")}
-                    title="Pink Noise"
-                    aria-label="Select Pink Noise playlist"
-                >
-                </button>
-            </div>
         </div>
-        <button
-            class="browse-btn"
-            class:active={isBrowsing}
-            onclick={toggleBrowse}
-        >
-            {isBrowsing ? "Close" : "Browse"}
-        </button>
+        <div class="playlist-selector right">
+            <button
+                class="playlist-btn white"
+                class:active={currentPlaylist === "white"}
+                onclick={() => handlePlaylistButton("white")}
+                title="White Noise"
+                aria-label="Select White Noise playlist"
+            ></button>
+            <button
+                class="playlist-btn brown"
+                class:active={currentPlaylist === "brown"}
+                onclick={() => handlePlaylistButton("brown")}
+                title="Brown Noise"
+                aria-label="Select Brown Noise playlist"
+            ></button>
+            <button
+                class="playlist-btn pink"
+                class:active={currentPlaylist === "pink"}
+                onclick={() => handlePlaylistButton("pink")}
+                title="Pink Noise"
+                aria-label="Select Pink Noise playlist"
+            ></button>
+        </div>
     </div>
 
     <!-- Content area with Now Playing and Track Grid -->
@@ -377,19 +376,24 @@
     .ambient-card {
         background: var(--surface-color);
         border-radius: 1.25rem;
-        padding: 1.5rem;
+        padding: 1.75rem; /* increased for more breathing room */
         box-shadow:
             0 1px 3px rgba(0, 0, 0, 0.08),
             0 4px 12px rgba(0, 0, 0, 0.05),
             0 0 0 1px var(--border-color);
         width: 100%;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        transition:
+            width 0.22s ease-in-out,
+            transform 0.22s ease-in-out,
+            box-shadow 0.22s ease-in-out,
+            padding 0.22s ease-in-out;
     }
 
     /* Width animation based on state */
     .ambient-card.playing:not(.browsing) {
         width: 96%;
         margin: 0 auto;
+        transform: translateY(-2px); /* subtle motion for active state */
     }
 
     /* Header */
@@ -397,7 +401,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 1.125rem;
+        margin-bottom: 1.25rem;
         gap: 1rem;
     }
 
@@ -423,6 +427,10 @@
         gap: 0.375rem;
     }
 
+    .playlist-selector.right {
+        justify-content: flex-end;
+    }
+
     .playlist-btn {
         width: 1.125rem;
         height: 1.125rem;
@@ -445,16 +453,25 @@
 
     .playlist-btn.active {
         border-width: 2px;
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 20%, transparent);
+        box-shadow: 0 0 0 2px
+            color-mix(in srgb, var(--primary-color) 20%, transparent);
     }
 
     /* Playlist-specific colors - theme-aware */
     .playlist-btn.white {
-        background: color-mix(in srgb, var(--background-color) 95%, var(--text-color) 5%);
+        background: color-mix(
+            in srgb,
+            var(--background-color) 95%,
+            var(--text-color) 5%
+        );
     }
 
     .playlist-btn.white:hover {
-        border-color: color-mix(in srgb, var(--text-secondary) 60%, transparent);
+        border-color: color-mix(
+            in srgb,
+            var(--text-secondary) 60%,
+            transparent
+        );
         background: var(--background-color);
     }
 
@@ -464,57 +481,34 @@
     }
 
     .playlist-btn.brown {
-        background: color-mix(in srgb, #8B4513 70%, var(--surface-color) 30%);
+        background: color-mix(in srgb, #8b4513 70%, var(--surface-color) 30%);
     }
 
     .playlist-btn.brown:hover {
-        border-color: color-mix(in srgb, #8B4513 80%, transparent);
-        background: color-mix(in srgb, #8B4513 80%, var(--surface-color) 20%);
+        border-color: color-mix(in srgb, #8b4513 80%, transparent);
+        background: color-mix(in srgb, #8b4513 80%, var(--surface-color) 20%);
     }
 
     .playlist-btn.brown.active {
-        border-color: #8B4513;
-        background: color-mix(in srgb, #8B4513 75%, var(--surface-color) 25%);
+        border-color: #8b4513;
+        background: color-mix(in srgb, #8b4513 75%, var(--surface-color) 25%);
     }
 
     .playlist-btn.pink {
-        background: color-mix(in srgb, #FFC0CB 75%, var(--surface-color) 25%);
+        background: color-mix(in srgb, #ffc0cb 75%, var(--surface-color) 25%);
     }
 
     .playlist-btn.pink:hover {
-        border-color: color-mix(in srgb, #FF69B4 80%, transparent);
-        background: color-mix(in srgb, #FFC0CB 85%, var(--surface-color) 15%);
+        border-color: color-mix(in srgb, #ff69b4 80%, transparent);
+        background: color-mix(in srgb, #ffc0cb 85%, var(--surface-color) 15%);
     }
 
     .playlist-btn.pink.active {
-        border-color: #FF69B4;
-        background: color-mix(in srgb, #FFC0CB 80%, var(--surface-color) 20%);
+        border-color: #ff69b4;
+        background: color-mix(in srgb, #ffc0cb 80%, var(--surface-color) 20%);
     }
 
-    .browse-btn {
-        padding: 0.375rem 0.875rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--border-color);
-        background: var(--background-color);
-        color: var(--text-secondary);
-        font-size: 0.75rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-        flex-shrink: 0;
-    }
-
-    .browse-btn:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-        background: color-mix(in srgb, var(--primary-color) 8%, transparent);
-    }
-
-    .browse-btn.active {
-        background: color-mix(in srgb, var(--primary-color) 12%, transparent);
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-    }
+    /* Browse button removed */
 
     /* Content Area */
     .ambient-content {
@@ -529,8 +523,8 @@
         background: var(--background-color);
         border: 1px solid var(--border-color);
         border-radius: 0.75rem;
-        padding: 0.875rem;
-        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 1rem; /* slight increase */
+        transition: all 0.22s ease-in-out;
         min-width: 0;
     }
 
@@ -558,8 +552,8 @@
 
     /* Track Cover with Image Support */
     .track-cover {
-        width: 3.25rem;
-        height: 3.25rem;
+        width: 4rem; /* increased cover size */
+        height: 4rem;
         border-radius: 0.625rem;
         background: linear-gradient(
             135deg,
@@ -624,12 +618,12 @@
         align-items: center;
         justify-content: center;
         gap: 4px;
-        height: 3.25rem;
+        height: 4rem; /* match cover height */
         min-width: 0;
         padding: 0 0.5rem;
         transition:
-            opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
-            transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity 0.22s ease-in-out,
+            transform 0.22s ease-in-out;
     }
 
     .visualizer.hidden {
@@ -754,13 +748,13 @@
         display: none;
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(2, 1fr);
-        gap: 0.5rem;
+        gap: 0.625rem; /* slightly larger spacing */
         flex: 1;
         opacity: 0;
         transform: translateX(16px);
         transition:
-            opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-            transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity 0.2s ease-in-out,
+            transform 0.2s ease-in-out;
     }
 
     .track-grid.visible {
@@ -809,8 +803,8 @@
     }
 
     .option-cover {
-        width: 2rem;
-        height: 2rem;
+        width: 2.5rem; /* larger thumbnails */
+        height: 2.5rem;
         border-radius: 0.375rem;
         background: linear-gradient(
             135deg,
