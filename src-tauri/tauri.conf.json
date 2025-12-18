@@ -8,7 +8,7 @@
     },
     "bundle": {
         "active": true,
-        "targets": "all",
+        "targets": ["deb", "msi", "dmg"],
         "category": "Productivity",
         "copyright": "",
         "externalBin": [],
@@ -40,7 +40,19 @@
             "../static/white-noise/Cumulus-Clouds.mp3",
             "../static/white-noise/Natural-Sample-Makers.mp3",
             "../static/white-noise/Quantum-White.mp3",
-            "../static/white-noise/Tranquil-White-Noise.mp3"
+            "../static/white-noise/Tranquil-White-Noise.mp3",
+            "../static/brown-noise/chestnut.flac",
+            "../static/brown-noise/dreamy.flac",
+            "../static/brown-noise/eternity.flac",
+            "../static/brown-noise/Maple.flac",
+            "../static/brown-noise/Noise.flac",
+            "../static/brown-noise/retreat.flac",
+            "../static/pink-noise/Clouds-of-pink.flac",
+            "../static/pink-noise/fable.flac",
+            "../static/pink-noise/Flmaingo.flac",
+            "../static/pink-noise/Pinkerton.flac",
+            "../static/pink-noise/waterfall.flac",
+            "../static/pink-noise/waves.flac"
         ],
         "shortDescription": "",
         "windows": {
@@ -54,7 +66,7 @@
             }
         }
     },
-    "productName": "Pomodoro Timer",
+    "productName": "PomodoroTimer",
     "version": "1.0.0",
     "identifier": "com.vinayak.pomodoro-timer",
     "plugins": {

@@ -2,55 +2,126 @@
     import { onMount } from "svelte";
     import { invoke } from "@tauri-apps/api/core";
 
+    type PlaylistType = "white" | "brown" | "pink";
+
+    let currentPlaylist = $state<PlaylistType>("white");
     let selectedNoise = $state("boiler-ambient-noise.mp3");
     let isPlaying = $state(false);
     let isBrowsing = $state(false);
     let coverError = $state(false);
 
-    // Short, calm labels for Zen Mode
-    const whiteNoiseOptions = [
-        {
-            name: "Boiler",
-            fullName: "Boiler Ambient Noise",
-            file: "boiler-ambient-noise.mp3",
-        },
-        { name: "Ambi", fullName: "Ambi Val", file: "Ambi-Val.mp3" },
-        {
-            name: "Clouds",
-            fullName: "Cumulus Clouds",
-            file: "Cumulus-Clouds.mp3",
-        },
-        {
-            name: "Nature",
-            fullName: "Natural Sample",
-            file: "Natural-Sample-Makers.mp3",
-        },
-        {
-            name: "Quantum",
-            fullName: "Quantum White",
-            file: "Quantum-White.mp3",
-        },
-        {
-            name: "Tranquil",
-            fullName: "Tranquil White Noise",
-            file: "Tranquil-White-Noise.mp3",
-        },
-    ];
+    // Playlist configurations - each has exactly 6 tracks
+    const playlists = {
+        white: [
+            {
+                name: "Boiler",
+                fullName: "Boiler Ambient Noise",
+                file: "boiler-ambient-noise.mp3",
+            },
+            { name: "Ambi", fullName: "Ambi Val", file: "Ambi-Val.mp3" },
+            {
+                name: "Clouds",
+                fullName: "Cumulus Clouds",
+                file: "Cumulus-Clouds.mp3",
+            },
+            {
+                name: "Nature",
+                fullName: "Natural Sample",
+                file: "Natural-Sample-Makers.mp3",
+            },
+            {
+                name: "Quantum",
+                fullName: "Quantum White",
+                file: "Quantum-White.mp3",
+            },
+            {
+                name: "Tranquil",
+                fullName: "Tranquil White Noise",
+                file: "Tranquil-White-Noise.mp3",
+            },
+        ],
+        brown: [
+            {
+                name: "Chestnut",
+                fullName: "Chestnut Brown",
+                file: "chestnut.flac",
+            },
+            {
+                name: "Dreamy",
+                fullName: "Dreamy Brown Flow",
+                file: "dreamy.flac",
+            },
+            {
+                name: "Eternity",
+                fullName: "Eternity Brown",
+                file: "eternity.flac",
+            },
+            {
+                name: "Maple",
+                fullName: "Maple Brown Noise",
+                file: "Maple.flac",
+            },
+            {
+                name: "Noise",
+                fullName: "Deep Brown Noise",
+                file: "Noise.flac",
+            },
+            {
+                name: "Retreat",
+                fullName: "Brown Retreat",
+                file: "retreat.flac",
+            },
+        ],
+        pink: [
+            {
+                name: "Clouds",
+                fullName: "Clouds of Pink",
+                file: "Clouds-of-pink.flac",
+            },
+            {
+                name: "Fable",
+                fullName: "Pink Fable",
+                file: "fable.flac",
+            },
+            {
+                name: "Flamingo",
+                fullName: "Flamingo Pink",
+                file: "Flmaingo.flac",
+            },
+            {
+                name: "Pinkerton",
+                fullName: "Pinkerton Pink",
+                file: "Pinkerton.flac",
+            },
+            {
+                name: "Waterfall",
+                fullName: "Pink Waterfall",
+                file: "waterfall.flac",
+            },
+            {
+                name: "Waves",
+                fullName: "Pink Waves",
+                file: "waves.flac",
+            },
+        ],
+    };
+
+    // Get current playlist tracks
+    const currentTracks = $derived(playlists[currentPlaylist]);
 
     // Get current track info
     const currentTrack = $derived(
-        whiteNoiseOptions.find((o) => o.file === selectedNoise) ||
-            whiteNoiseOptions[0],
+        currentTracks.find((o) => o.file === selectedNoise) || currentTracks[0],
     );
 
     // Derive cover image path from audio filename
     const coverImagePath = $derived(
-        `/white-noise/${selectedNoise.replace(".mp3", ".jpg")}`,
+        `/${currentPlaylist}-noise/${selectedNoise.replace(/\.(mp3|flac)$/, ".jpg")}`,
     );
 
     // Get cover path for any track option
     function getOptionCoverPath(file: string): string {
-        return `/white-noise/${file.replace(".mp3", ".jpg")}`;
+        return `/${currentPlaylist}-noise/${file.replace(/\.(mp3|flac)$/, ".jpg")}`;
     }
 
     // Reset cover error when track changes
@@ -62,11 +133,12 @@
     async function playWhiteNoise(fileName: string) {
         try {
             await invoke("set_white_noise", {
-                soundName: `white-noise/${fileName}`,
+                soundName: `${currentPlaylist}-noise/${fileName}`,
             });
             selectedNoise = fileName;
             isPlaying = true;
             localStorage.setItem("selectedWhiteNoise", fileName);
+            localStorage.setItem("currentPlaylist", currentPlaylist);
             localStorage.setItem("ambientNoiseEnabled", "true");
         } catch (error) {
             console.error("Failed to play white noise:", error);
@@ -103,13 +175,42 @@
         isBrowsing = !isBrowsing;
     }
 
+    // Playlist switcher - stops playback, loads track 1, opens browse
+    async function switchPlaylist(playlist: PlaylistType) {
+        if (currentPlaylist === playlist) return;
+
+        // Stop current playback
+        if (isPlaying) {
+            await stopWhiteNoise();
+        }
+
+        // Switch playlist and select track 1
+        currentPlaylist = playlist;
+        selectedNoise = playlists[playlist][0].file;
+        coverError = false;
+
+        // Auto-play track 1 and open browse
+        await playWhiteNoise(selectedNoise);
+        isBrowsing = true;
+
+        // Save playlist preference
+        localStorage.setItem("currentPlaylist", playlist);
+    }
+
     function handleCoverError() {
         coverError = true;
     }
 
     onMount(() => {
+        const savedPlaylist = localStorage.getItem(
+            "currentPlaylist",
+        ) as PlaylistType;
         const savedNoise = localStorage.getItem("selectedWhiteNoise");
         const savedEnabled = localStorage.getItem("ambientNoiseEnabled");
+
+        if (savedPlaylist && playlists[savedPlaylist]) {
+            currentPlaylist = savedPlaylist;
+        }
 
         if (savedNoise) {
             selectedNoise = savedNoise;
@@ -122,10 +223,38 @@
     });
 </script>
 
-<div class="ambient-card" class:browsing={isBrowsing}>
-    <!-- Header with title and Browse button -->
+<div class="ambient-card" class:browsing={isBrowsing} class:playing={isPlaying}>
+    <!-- Header with playlist buttons and Browse button -->
     <div class="ambient-header">
-        <span class="ambient-title">Ambient Sounds</span>
+        <div class="header-left">
+            <span class="ambient-title">Ambient Sounds</span>
+            <div class="playlist-selector">
+                <button
+                    class="playlist-btn white"
+                    class:active={currentPlaylist === "white"}
+                    onclick={() => switchPlaylist("white")}
+                    title="White Noise"
+                    aria-label="Select White Noise playlist"
+                >
+                </button>
+                <button
+                    class="playlist-btn brown"
+                    class:active={currentPlaylist === "brown"}
+                    onclick={() => switchPlaylist("brown")}
+                    title="Brown Noise"
+                    aria-label="Select Brown Noise playlist"
+                >
+                </button>
+                <button
+                    class="playlist-btn pink"
+                    class:active={currentPlaylist === "pink"}
+                    onclick={() => switchPlaylist("pink")}
+                    title="Pink Noise"
+                    aria-label="Select Pink Noise playlist"
+                >
+                </button>
+            </div>
+        </div>
         <button
             class="browse-btn"
             class:active={isBrowsing}
@@ -209,7 +338,7 @@
 
         <!-- Track Selection Grid (visible when browsing) -->
         <div class="track-grid" class:visible={isBrowsing}>
-            {#each whiteNoiseOptions as option}
+            {#each currentTracks as option}
                 <button
                     class="track-option"
                     class:selected={selectedNoise === option.file}
@@ -222,7 +351,9 @@
                             alt={option.name}
                             class="option-cover-image"
                             onerror={(e) =>
-                                (e.currentTarget.style.display = "none")}
+                                ((
+                                    e.currentTarget as HTMLImageElement
+                                ).style.display = "none")}
                         />
                         <svg
                             class="option-cover-fallback"
@@ -246,7 +377,7 @@
     .ambient-card {
         background: var(--surface-color);
         border-radius: 1.25rem;
-        padding: 1.25rem;
+        padding: 1.5rem;
         box-shadow:
             0 1px 3px rgba(0, 0, 0, 0.08),
             0 4px 12px rgba(0, 0, 0, 0.05),
@@ -255,18 +386,109 @@
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* Width animation based on state */
+    .ambient-card.playing:not(.browsing) {
+        width: 96%;
+        margin: 0 auto;
+    }
+
     /* Header */
     .ambient-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 1rem;
+        margin-bottom: 1.125rem;
+        gap: 1rem;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex: 1;
+        min-width: 0;
     }
 
     .ambient-title {
         font-size: 0.875rem;
         font-weight: 600;
         color: var(--text-color);
+        white-space: nowrap;
+    }
+
+    /* Playlist Selector Buttons */
+    .playlist-selector {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .playlist-btn {
+        width: 1.125rem;
+        height: 1.125rem;
+        border-radius: 50%;
+        border: 1.5px solid var(--border-color);
+        cursor: pointer;
+        transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .playlist-btn:hover {
+        transform: scale(1.12);
+        border-width: 2px;
+    }
+
+    .playlist-btn:active {
+        transform: scale(0.98);
+    }
+
+    .playlist-btn.active {
+        border-width: 2px;
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 20%, transparent);
+    }
+
+    /* Playlist-specific colors - theme-aware */
+    .playlist-btn.white {
+        background: color-mix(in srgb, var(--background-color) 95%, var(--text-color) 5%);
+    }
+
+    .playlist-btn.white:hover {
+        border-color: color-mix(in srgb, var(--text-secondary) 60%, transparent);
+        background: var(--background-color);
+    }
+
+    .playlist-btn.white.active {
+        border-color: var(--text-secondary);
+        background: var(--background-color);
+    }
+
+    .playlist-btn.brown {
+        background: color-mix(in srgb, #8B4513 70%, var(--surface-color) 30%);
+    }
+
+    .playlist-btn.brown:hover {
+        border-color: color-mix(in srgb, #8B4513 80%, transparent);
+        background: color-mix(in srgb, #8B4513 80%, var(--surface-color) 20%);
+    }
+
+    .playlist-btn.brown.active {
+        border-color: #8B4513;
+        background: color-mix(in srgb, #8B4513 75%, var(--surface-color) 25%);
+    }
+
+    .playlist-btn.pink {
+        background: color-mix(in srgb, #FFC0CB 75%, var(--surface-color) 25%);
+    }
+
+    .playlist-btn.pink:hover {
+        border-color: color-mix(in srgb, #FF69B4 80%, transparent);
+        background: color-mix(in srgb, #FFC0CB 85%, var(--surface-color) 15%);
+    }
+
+    .playlist-btn.pink.active {
+        border-color: #FF69B4;
+        background: color-mix(in srgb, #FFC0CB 80%, var(--surface-color) 20%);
     }
 
     .browse-btn {
@@ -279,6 +501,7 @@
         font-weight: 500;
         cursor: pointer;
         transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
     }
 
     .browse-btn:hover {
@@ -656,6 +879,19 @@
     @media (max-width: 480px) {
         .ambient-card {
             padding: 1rem;
+        }
+
+        .ambient-card.playing:not(.browsing) {
+            width: 94%;
+        }
+
+        .header-left {
+            gap: 0.5rem;
+        }
+
+        .playlist-btn {
+            width: 1rem;
+            height: 1rem;
         }
 
         .now-playing-card.compact {
